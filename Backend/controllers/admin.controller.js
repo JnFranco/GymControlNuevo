@@ -21,3 +21,24 @@ exports.getResumen = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getEstadisticas = async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        DATE_FORMAT(fecha_asistencia, '%W') AS dia,
+        COUNT(*) AS asistencias
+      FROM asistencias
+      WHERE presente = 1
+        AND fecha_asistencia >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+      GROUP BY dia
+      ORDER BY fecha_asistencia
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+

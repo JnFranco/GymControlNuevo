@@ -23,10 +23,12 @@ export default function DashboardAdmin() {
 
       {/* 2. ÁREA DE CONTENIDO DINÁMICO */}
       <Box sx={{ flexGrow: 1, p: 4, mt: 2 }}>
-        {activeTab === 'dashboard' && <DashboardHome />}
-        {activeTab === 'usuarios' && <UsuariosView />}
-        {activeTab === 'entrenadores' && <EntrenadoresView />}
-      </Box>
+    {activeTab === 'dashboard' && <DashboardHome />}
+    {activeTab === 'usuarios' && <UsuariosView />}
+    {activeTab === 'entrenadores' && <EntrenadoresView />}
+    </Box>
+
+
     </Box>
   );
 }

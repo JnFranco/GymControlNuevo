@@ -6,6 +6,8 @@ import InstructorLayout from "./layouts/InstructorLayout"; // 👈 Nuevo
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
+
+
 // Pages - cliente
 import DashboardCliente from "./pages/cliente/DashboardCliente";
 
