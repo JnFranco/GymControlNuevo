@@ -127,10 +127,10 @@ export default function MisClases() {
             ) : (
               clases.map((clase) => (
                 <TableRow key={clase.id}>
-                  <TableCell>{clase.nombre}</TableCell>
+                  <TableCell>{clase.clase_nombre}</TableCell>
 
                   <TableCell align="center">
-                    {clase.cupos}
+                    {clase.clase_cupos}
                   </TableCell>
 
                   <TableCell align="center">
