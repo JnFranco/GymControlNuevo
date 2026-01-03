@@ -11,9 +11,10 @@
   backdrop-filter: blur(10px);
   padding: 20px;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* 👈 Importante para marginTop: auto */
   gap: 10px;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 100vh;
 }
 
 .logo {
@@ -48,6 +49,18 @@
   font-weight: 600 !important;
 }
 
+/* 👇 ESTILOS PARA EL BOTÓN DE CERRAR SESIÓN */
+.menu-button.logout-button {
+  color: #f44336 !important;
+  border: 1px solid rgba(244, 67, 54, 0.3) !important;
+  margin-top: 10px !important;
+}
+
+.menu-button.logout-button:hover {
+  background: rgba(244, 67, 54, 0.1) !important;
+  border-color: #f44336 !important;
+}
+
 .menu-icon {
   margin-right: 12px;
   font-size: 20px;
@@ -65,6 +78,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .title {
@@ -72,4 +87,18 @@
   font-weight: 700;
 }
 
-/* Estilos adicionales que necesites */
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+  
+  .logo h6,
+  .menu-button span {
+    display: none;
+  }
+  
+  .menu-icon {
+    margin-right: 0 !important;
+  }
+}
