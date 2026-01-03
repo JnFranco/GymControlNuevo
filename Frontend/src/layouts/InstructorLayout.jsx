@@ -95,7 +95,12 @@ export default function InstructorLayout() {
         </Button>
 
         {/* ASISTENCIAS */}
-        <Button className="menu-button">
+        <Button
+          className={`menu-button ${
+            location.pathname === "/entrenador/asistencias" ? "active" : ""
+          }`}
+          onClick={() => navigate("/entrenador/asistencias")}
+        >
           <CheckCircle className="menu-icon" /> Asistencias
         </Button>
 
