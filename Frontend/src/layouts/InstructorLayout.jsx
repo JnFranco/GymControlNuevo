@@ -110,9 +110,16 @@ export default function InstructorLayout() {
         </Button>
 
         {/* MI PERFIL */}
-        <Button className="menu-button">
+        <Button
+          className={`menu-button ${
+            location.pathname === "/entrenador/perfil" ? "active" : ""
+          }`}
+          onClick={() => navigate("/entrenador/perfil")}
+        >
           <Person className="menu-icon" /> Mi Perfil
         </Button>
+
+
 
         {/* BOTÓN DE CERRAR SESIÓN EN EL SIDEBAR */}
         <Box sx={{ marginTop: 'auto', paddingTop: 2 }}>

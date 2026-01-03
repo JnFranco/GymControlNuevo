@@ -1,0 +1,59 @@
+.perfil-container {
+  padding: 20px;
+}
+
+.perfil-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+/* Card clara sobre fondo oscuro */
+.perfil-card {
+  background: #f5f6f8;
+  border-radius: 12px;
+  max-width: 800px;
+}
+
+/* Inputs */
+.perfil-input {
+  margin-bottom: 18px;
+}
+
+/* Texto negro */
+.perfil-input input {
+  color: #000;
+}
+
+/* Label oscuro */
+.perfil-input label {
+  color: #444;
+}
+
+/* Focus */
+.perfil-input .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #facc15;
+}
+
+/* Disabled */
+.perfil-input .Mui-disabled {
+  background-color: #eaeaea;
+  color: #555;
+}
+
+/* Botón */
+.perfil-btn {
+  margin-top: 10px;
+  background-color: #facc15 !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+  padding: 10px 24px !important;
+  border-radius: 8px !important;
+}
+
+.perfil-btn:hover {
+  background-color: #eab308 !important;
+}

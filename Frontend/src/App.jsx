@@ -16,7 +16,7 @@ import DashboardInstructor from "./pages/instructor/DashboardInstructor";
 import MisClases from "./pages/instructor/MisClases";
 import Horarios from "./pages/instructor/Horarios";
 import Asistencias from "./pages/instructor/Asistencias";
-
+import MiPerfil from "./pages/instructor/MiPerfil";
 // Pages - admin
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
 
@@ -42,6 +42,7 @@ export default function App() {
         <Route path="/entrenador/mis-clases" element={<MisClases />} />
         <Route path="/entrenador/horarios" element={<Horarios />} />
         <Route path="/entrenador/asistencias" element={<Asistencias />} />
+        <Route path="/entrenador/perfil" element={<MiPerfil />} />
         {/* Aquí agregarás más rutas: horarios, asistencias, etc. */}
       </Route>
 
