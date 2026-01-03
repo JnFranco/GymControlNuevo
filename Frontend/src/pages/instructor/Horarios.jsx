@@ -18,8 +18,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  LinearProgress,
-  IconButton
+  LinearProgress
 } from "@mui/material";
 
 import {
@@ -28,7 +27,7 @@ import {
   CalendarToday,
   Person,
   Visibility,
-  Close
+  People
 } from "@mui/icons-material";
 
 import api from "../../services/api";
@@ -44,7 +43,7 @@ export default function Horarios() {
     totalReservas: 0
   });
   
-  // Modal de reservas
+  // Estado para el modal de reservas
   const [modalOpen, setModalOpen] = useState(false);
   const [reservasModal, setReservasModal] = useState([]);
   const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
@@ -84,7 +83,10 @@ export default function Horarios() {
       
     } catch (error) {
       console.error("❌ Error al cargar horarios:", error);
-      setError("Error al cargar los horarios. Por favor intenta de nuevo.");
+      setError(
+        error.response?.data?.error || 
+        "Error al cargar los horarios. Por favor intenta de nuevo."
+      );
     } finally {
       setLoading(false);
     }
@@ -92,33 +94,17 @@ export default function Horarios() {
 
   const calcularEstadisticas = (horariosData) => {
     const hoy = new Date();
-    const diaHoy = hoy.toLocaleDateString('es-ES', { weekday: 'long' });
-    const diaHoyCapitalizado = diaHoy.charAt(0).toUpperCase() + diaHoy.slice(1);
+    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const diaHoy = diasSemana[hoy.getDay()];
 
-    const horariosHoy = horariosData.filter(h => h.dia_semana === diaHoyCapitalizado).length;
-    const totalReservas = horariosData.reduce((sum, h) => sum + (h.reservas_actuales || 0), 0);
+    const horariosHoy = horariosData.filter(h => h.dia_semana === diaHoy).length;
+    const totalReservas = horariosData.reduce((sum, h) => sum + (h.cupos_ocupados || 0), 0);
     
     setEstadisticas({
       totalHorarios: horariosData.length,
       horariosHoy: horariosHoy,
       totalReservas: totalReservas
     });
-  };
-
-  const verReservas = async (horario) => {
-    setHorarioSeleccionado(horario);
-    setModalOpen(true);
-    setLoadingReservas(true);
-    
-    try {
-      const res = await api.get(`/horarios/${horario.id}/reservas`);
-      setReservasModal(res.data);
-    } catch (error) {
-      console.error("❌ Error al cargar reservas:", error);
-      setReservasModal([]);
-    } finally {
-      setLoadingReservas(false);
-    }
   };
 
   const getDiaColor = (dia) => {
@@ -137,22 +123,42 @@ export default function Horarios() {
   const getOcupacionColor = (porcentaje) => {
     if (porcentaje >= 90) return '#f44336'; // Rojo
     if (porcentaje >= 70) return '#ff9800'; // Naranja
-    if (porcentaje >= 50) return '#ffd700'; // Amarillo
+    if (porcentaje >= 50) return '#ffeb3b'; // Amarillo
     return '#4caf50'; // Verde
+  };
+
+  const handleVerReservas = async (horario) => {
+    setHorarioSeleccionado(horario);
+    setModalOpen(true);
+    setLoadingReservas(true);
+    
+    try {
+      const res = await api.get(`/horarios/${horario.id}/reservas`);
+      console.log("✅ Reservas obtenidas:", res.data);
+      setReservasModal(res.data);
+    } catch (error) {
+      console.error("❌ Error al cargar reservas:", error);
+      setReservasModal([]);
+    } finally {
+      setLoadingReservas(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setReservasModal([]);
+    setHorarioSeleccionado(null);
   };
 
   if (error) {
     return (
       <Box>
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-            <ScheduleIcon sx={{ fontSize: 40, color: '#ffd700' }} />
-            <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
-              Mis Horarios
-            </Typography>
-          </Box>
+          <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 1 }}>
+            Mis Horarios
+          </Typography>
           <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
-            Horarios asociados a tus clases
+            Gestiona tus horarios asignados
           </Typography>
         </Box>
         <Box className="error-box">
@@ -213,7 +219,7 @@ export default function Horarios() {
           <Card className="stat-card-horarios">
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Person sx={{ fontSize: 40, color: '#2196f3' }} />
+                <People sx={{ fontSize: 40, color: '#2196f3' }} />
                 <Box>
                   <Typography className="stat-label">Total Reservas</Typography>
                   <Typography className="stat-value">{estadisticas.totalReservas}</Typography>
@@ -252,184 +258,172 @@ export default function Horarios() {
                 </TableCell>
               </TableRow>
             ) : (
-              horarios.map((horario) => {
-                const ocupadas = horario.reservas_actuales || 0;
-                const capacidad = horario.capacidad || 0;
-                const porcentaje = capacidad > 0 ? (ocupadas / capacidad) * 100 : 0;
-                
-                return (
-                  <TableRow key={horario.id} className="table-row-hover">
-                    <TableCell>
-                      <Typography sx={{ fontWeight: 600, color: 'white' }}>
-                        {horario.clase_nombre}
-                      </Typography>
-                    </TableCell>
+              horarios.map((horario) => (
+                <TableRow key={horario.id} className="table-row-hover">
+                  <TableCell>
+                    <Typography sx={{ fontWeight: 600, color: 'white' }}>
+                      {horario.clase_nombre}
+                    </Typography>
+                  </TableCell>
 
-                    <TableCell align="center">
-                      <Chip
-                        label={horario.dia_semana}
+                  <TableCell align="center">
+                    <Chip
+                      label={horario.dia_semana}
+                      sx={{
+                        backgroundColor: getDiaColor(horario.dia_semana),
+                        color: 'white',
+                        fontWeight: 600
+                      }}
+                    />
+                  </TableCell>
+
+                  <TableCell align="center">
+                    <Chip
+                      icon={<AccessTime />}
+                      label={`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
+                      className="chip-hora"
+                    />
+                  </TableCell>
+
+                  <TableCell align="center">
+                    <Typography sx={{ fontWeight: 600, color: 'white' }}>
+                      {horario.capacidad}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell align="center">
+                    <Box sx={{ minWidth: 120 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: 'white' }}>
+                          {horario.cupos_ocupados}/{horario.capacidad}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'white' }}>
+                          {horario.porcentaje_ocupacion}%
+                        </Typography>
+                      </Box>
+                      <LinearProgress
+                        variant="determinate"
+                        value={horario.porcentaje_ocupacion}
                         sx={{
-                          backgroundColor: getDiaColor(horario.dia_semana),
-                          color: 'white',
-                          fontWeight: 600
+                          height: 8,
+                          borderRadius: 5,
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: getOcupacionColor(horario.porcentaje_ocupacion),
+                            borderRadius: 5
+                          }
                         }}
                       />
-                    </TableCell>
+                    </Box>
+                  </TableCell>
 
-                    <TableCell align="center">
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
-                        <Chip
-                          icon={<AccessTime />}
-                          label={`${horario.hora_inicio.slice(0, 5)} - ${horario.hora_fin.slice(0, 5)}`}
-                          className="chip-hora"
-                        />
-                      </Box>
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Typography sx={{ fontWeight: 600, color: 'white' }}>
-                        {capacidad}
-                      </Typography>
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Box>
-                        <Typography sx={{ 
-                          fontWeight: 600, 
-                          color: getOcupacionColor(porcentaje),
-                          mb: 1
-                        }}>
-                          {ocupadas} / {capacidad}
-                        </Typography>
-                        <LinearProgress 
-                          variant="determinate" 
-                          value={porcentaje}
-                          sx={{
-                            height: 8,
-                            borderRadius: 4,
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: getOcupacionColor(porcentaje)
-                            }
-                          }}
-                        />
-                        <Typography sx={{ 
-                          fontSize: '0.75rem', 
-                          color: 'rgba(255,255,255,0.5)',
-                          mt: 0.5
-                        }}>
-                          {porcentaje.toFixed(0)}% ocupado
-                        </Typography>
-                      </Box>
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<Visibility />}
-                        onClick={() => verReservas(horario)}
-                        sx={{
-                          background: 'linear-gradient(135deg, #2196f3 0%, #64b5f6 100%)',
-                          textTransform: 'none'
-                        }}
-                      >
-                        Ver Reservas
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
+                  <TableCell align="center">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<Visibility />}
+                      onClick={() => handleVerReservas(horario)}
+                      sx={{
+                        background: 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)',
+                        color: 'black',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #ffed4e 0%, #ffd700 100%)'
+                        }
+                      }}
+                    >
+                      Ver Reservas
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
       {/* NOTA */}
-      <Typography className="note-horarios">
-        ⏰ Los horarios son asignados por el administrador. Puedes ver los cupos ocupados y las reservas activas.
-      </Typography>
+      <Box className="note-horarios">
+        <Typography sx={{ mb: 1 }}>
+          ✅ Puedes ver cupos ocupados y reservas
+        </Typography>
+        <Typography>
+          ❌ No puedes crear ni borrar horarios (solo el administrador)
+        </Typography>
+      </Box>
 
       {/* MODAL DE RESERVAS */}
-      <Dialog 
-        open={modalOpen} 
-        onClose={() => setModalOpen(false)}
+      <Dialog
+        open={modalOpen}
+        onClose={handleCloseModal}
         maxWidth="md"
         fullWidth
         PaperProps={{
           sx: {
-            background: 'rgba(0, 0, 0, 0.95)',
+            background: 'rgba(0, 0, 0, 0.9)',
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             color: 'white'
           }
         }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
-        }}>
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Reservas - {horarioSeleccionado?.clase_nombre}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-              {horarioSeleccionado?.dia_semana} • {horarioSeleccionado?.hora_inicio?.slice(0, 5)} - {horarioSeleccionado?.hora_fin?.slice(0, 5)}
-            </Typography>
+        <DialogTitle sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Person sx={{ color: '#ffd700' }} />
+            <Box>
+              <Typography variant="h6">
+                Reservas - {horarioSeleccionado?.clase_nombre}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                {horarioSeleccionado?.dia_semana} {horarioSeleccionado?.hora_inicio?.slice(0, 5)} - {horarioSeleccionado?.hora_fin?.slice(0, 5)}
+              </Typography>
+            </Box>
           </Box>
-          <IconButton onClick={() => setModalOpen(false)} sx={{ color: 'white' }}>
-            <Close />
-          </IconButton>
         </DialogTitle>
 
         <DialogContent sx={{ mt: 2 }}>
           {loadingReservas ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography>Cargando reservas...</Typography>
-            </Box>
+            <Typography align="center">Cargando reservas...</Typography>
           ) : reservasModal.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                No hay reservas para este horario
-              </Typography>
-            </Box>
+            <Typography align="center" sx={{ py: 3 }}>
+              No hay reservas para este horario
+            </Typography>
           ) : (
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: '#ffd700', fontWeight: 600 }}>Alumno</TableCell>
-                    <TableCell sx={{ color: '#ffd700', fontWeight: 600 }}>Contacto</TableCell>
-                    <TableCell sx={{ color: '#ffd700', fontWeight: 600 }} align="center">Estado</TableCell>
-                    <TableCell sx={{ color: '#ffd700', fontWeight: 600 }} align="center">Fecha Reserva</TableCell>
+                    <TableCell sx={{ color: '#ffd700' }}>Cliente</TableCell>
+                    <TableCell sx={{ color: '#ffd700' }}>Correo</TableCell>
+                    <TableCell sx={{ color: '#ffd700' }}>Teléfono</TableCell>
+                    <TableCell sx={{ color: '#ffd700' }} align="center">Estado</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {reservasModal.map((reserva) => (
                     <TableRow key={reserva.id}>
                       <TableCell sx={{ color: 'white' }}>
-                        {reserva.usuario_nombre} {reserva.usuario_apellido}
+                        {reserva.nombre} {reserva.apellido}
                       </TableCell>
-                      <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                        <Box>
-                          <Typography variant="body2">{reserva.usuario_correo}</Typography>
-                          <Typography variant="caption">{reserva.usuario_telefono}</Typography>
-                        </Box>
+                      <TableCell sx={{ color: 'white' }}>
+                        {reserva.correo}
+                      </TableCell>
+                      <TableCell sx={{ color: 'white' }}>
+                        {reserva.telefono || 'N/A'}
                       </TableCell>
                       <TableCell align="center">
-                        <Chip 
+                        <Chip
                           label={reserva.estado}
                           size="small"
                           sx={{
-                            backgroundColor: reserva.estado === 'Confirmada' ? '#4caf50' : '#ff9800',
+                            backgroundColor: 
+                              reserva.estado === 'Confirmada' ? '#4caf50' :
+                              reserva.estado === 'Pendiente' ? '#ff9800' :
+                              '#f44336',
                             color: 'white'
                           }}
                         />
-                      </TableCell>
-                      <TableCell align="center" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                        {new Date(reserva.fecha_reserva).toLocaleDateString('es-ES')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -440,7 +434,15 @@ export default function Horarios() {
         </DialogContent>
 
         <DialogActions sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', p: 2 }}>
-          <Button onClick={() => setModalOpen(false)} sx={{ color: '#ffd700' }}>
+          <Button 
+            onClick={handleCloseModal} 
+            sx={{ 
+              color: 'white',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+              }
+            }}
+          >
             Cerrar
           </Button>
         </DialogActions>

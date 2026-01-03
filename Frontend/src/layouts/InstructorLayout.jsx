@@ -57,9 +57,17 @@ export default function InstructorLayout() {
           <FitnessCenter className="menu-icon" /> Mis Clases
         </Button>
 
-        <Button className="menu-button">
+        <Button
+          className={`menu-button ${
+            location.pathname === "/entrenador/horarios" ? "active" : ""
+          }`}
+          onClick={() => navigate("/entrenador/horarios")}
+        >
           <Schedule className="menu-icon" /> Horarios
         </Button>
+        {/* <Button className="menu-button">
+          <Schedule className="menu-icon" /> Horarios
+        </Button> */}
 
         <Button className="menu-button">
           <CheckCircle className="menu-icon" /> Asistencias
