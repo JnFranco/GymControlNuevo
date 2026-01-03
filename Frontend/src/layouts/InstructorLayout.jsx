@@ -172,9 +172,16 @@ export default function InstructorLayout() {
                 }
               }}
             >
-              <MenuItem onClick={handleMenuClose}>
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate("/entrenador/perfil");
+                }}
+              >
                 <Person sx={{ mr: 1 }} /> Mi Perfil
               </MenuItem>
+
+
               <MenuItem onClick={handleMenuClose}>
                 <Settings sx={{ mr: 1 }} /> Configuración
               </MenuItem>

@@ -1,98 +1,143 @@
 import { useEffect, useState } from "react";
 import {
   Box,
+  Card,
+  CardContent,
   Typography,
   TextField,
   Button,
-  Card,
-  CardContent
+  Grid
 } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
 import api from "../../services/api";
 import "./MiPerfil.css";
 
 export default function MiPerfil() {
-  const [usuario, setUsuario] = useState({
+  const [usuario, setUsuario] = useState(null);
+  const [editando, setEditando] = useState(false);
+
+  const [form, setForm] = useState({
     nombre: "",
-    apellido: "",
-    correo: "",
     telefono: ""
   });
 
+  const usuarioStorage = JSON.parse(localStorage.getItem("usuario"));
+
   useEffect(() => {
-    const data = localStorage.getItem("usuario");
-    if (data) setUsuario(JSON.parse(data));
+    if (usuarioStorage?.id) {
+      api.get(`/usuarios/${usuarioStorage.id}`)
+        .then(res => {
+          setUsuario(res.data);
+          setForm({
+            nombre: res.data.nombre,
+            telefono: res.data.telefono || ""
+          });
+        })
+        .catch(err => console.error("❌ Error cargando perfil", err));
+    }
   }, []);
 
   const handleChange = (e) => {
-    setUsuario({ ...usuario, [e.target.name]: e.target.value });
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleGuardar = async () => {
     try {
-      await api.put(`/usuarios/${usuario.id}`, {
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        telefono: usuario.telefono
+      await api.put(`/usuarios/${usuarioStorage.id}`, {
+        nombre: form.nombre,
+        telefono: form.telefono
       });
-      alert("✅ Datos actualizados correctamente");
+      alert("✅ Perfil actualizado");
+      setEditando(false);
+      setUsuario({ ...usuario, ...form });
     } catch (error) {
-      console.error(error);
-      alert("❌ Error al actualizar datos");
+      alert("❌ Error al actualizar perfil");
     }
   };
 
+  if (!usuario) return null;
+
   return (
-    <Box className="perfil-container">
+    <Box>
       <Typography variant="h4" className="perfil-title">
-        <PersonIcon /> Mi Perfil
+        👤 Mi Perfil
       </Typography>
 
-      <Card className="perfil-card">
-        <CardContent>
-          <TextField
-            label="Nombre"
-            name="nombre"
-            value={usuario.nombre}
-            onChange={handleChange}
-            fullWidth
-            className="perfil-input"
-          />
+      <Grid container spacing={3}>
 
-          <TextField
-            label="Apellido"
-            name="apellido"
-            value={usuario.apellido}
-            onChange={handleChange}
-            fullWidth
-            className="perfil-input"
-          />
+        {/* COLUMNA IZQUIERDA – DATOS ACTUALES */}
+        <Grid item xs={12} md={6}>
+          <Card className="perfil-card">
+            <CardContent>
+              <Typography className="perfil-section-title">
+                Datos actuales
+              </Typography>
 
-          <TextField
-            label="Correo"
-            value={usuario.correo}
-            fullWidth
-            disabled
-            className="perfil-input"
-          />
+              <PerfilItem label="Nombre" value={usuario.nombre} />
+              <PerfilItem label="Apellido" value={usuario.apellido} />
+              <PerfilItem label="Correo" value={usuario.correo} />
+              <PerfilItem label="Teléfono" value={usuario.telefono || "No registrado"} />
 
-          <TextField
-            label="Teléfono"
-            name="telefono"
-            value={usuario.telefono}
-            onChange={handleChange}
-            fullWidth
-            className="perfil-input"
-          />
+              <Button
+                variant="outlined"
+                className="editar-btn"
+                onClick={() => setEditando(true)}
+              >
+                Editar perfil
+              </Button>
+            </CardContent>
+          </Card>
+        </Grid>
 
-          <Button
-            className="perfil-btn"
-            onClick={handleGuardar}
-          >
-            Guardar cambios
-          </Button>
-        </CardContent>
-      </Card>
+        {/* COLUMNA DERECHA – EDITAR */}
+        {editando && (
+          <Grid item xs={12} md={6}>
+            <Card className="perfil-card">
+              <CardContent>
+                <Typography className="perfil-section-title">
+                  Editar información
+                </Typography>
+
+                <TextField
+                  label="¿Cómo quieres que te llamemos?"
+                  name="nombre"
+                  value={form.nombre}
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                />
+
+                <TextField
+                  label="Número de celular"
+                  name="telefono"
+                  value={form.telefono}
+                  onChange={handleChange}
+                  fullWidth
+                  margin="normal"
+                />
+
+                <Button
+                  variant="contained"
+                  className="guardar-btn"
+                  onClick={handleGuardar}
+                >
+                  Guardar cambios
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+      </Grid>
+    </Box>
+  );
+}
+
+/* COMPONENTE REUTILIZABLE */
+function PerfilItem({ label, value }) {
+  return (
+    <Box className="perfil-item">
+      <Typography className="perfil-label">{label}</Typography>
+      <Typography className="perfil-value">{value}</Typography>
     </Box>
   );
 }

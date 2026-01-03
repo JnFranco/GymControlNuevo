@@ -1,59 +1,43 @@
-.perfil-container {
-  padding: 20px;
-}
-
 .perfil-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
-/* Card clara sobre fondo oscuro */
 .perfil-card {
-  background: #f5f6f8;
-  border-radius: 12px;
-  max-width: 800px;
+  background: #1e1e1e;
+  color: white;
+  border-radius: 16px;
 }
 
-/* Inputs */
-.perfil-input {
-  margin-bottom: 18px;
+.perfil-section-title {
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
-/* Texto negro */
-.perfil-input input {
-  color: #000;
+.perfil-item {
+  margin-bottom: 12px;
 }
 
-/* Label oscuro */
-.perfil-input label {
-  color: #444;
+.perfil-label {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.6);
 }
 
-/* Focus */
-.perfil-input .MuiOutlinedInput-root.Mui-focused fieldset {
-  border-color: #facc15;
+.perfil-value {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
-/* Disabled */
-.perfil-input .Mui-disabled {
-  background-color: #eaeaea;
-  color: #555;
+.editar-btn {
+  margin-top: 20px;
+  width: 100%;
+  border-color: #ffd700;
+  color: #ffd700;
 }
 
-/* Botón */
-.perfil-btn {
-  margin-top: 10px;
-  background-color: #facc15 !important;
-  color: #000 !important;
-  font-weight: 700 !important;
-  padding: 10px 24px !important;
-  border-radius: 8px !important;
-}
-
-.perfil-btn:hover {
-  background-color: #eab308 !important;
+.guardar-btn {
+  margin-top: 20px;
+  width: 100%;
+  font-weight: 600;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
 }
