@@ -9,6 +9,7 @@ import Register from "./pages/Register";
 
 
 // Pages - cliente
+import ClienteLayout from "./layouts/ClienteLayout";
 import DashboardCliente from "./pages/cliente/DashboardCliente";
 
 // Pages - instructor
@@ -31,11 +32,23 @@ export default function App() {
       {/* RUTAS CON LAYOUT GENERAL */}
       <Route element={<Layout />}>
         {/* CLIENTE */}
-        <Route path="/cliente" element={<DashboardCliente />} />
+        {/* <Route path="/cliente" element={<DashboardCliente />} /> */}
 
         {/* ADMIN */}
         <Route path="/administrador" element={<DashboardAdmin />} />
       </Route>
+
+      // CLIENTE
+      {/* CLIENTE */}
+      <Route element={<ClienteLayout />}>
+        <Route path="/cliente" element={<DashboardCliente />} />
+        {/* luego agregarás */}
+        {/* /cliente/clases */}
+        {/* /cliente/progreso */}
+        {/* /cliente/pagos */}
+        {/* /cliente/perfil */}
+      </Route>
+
 
       {/* RUTAS DEL INSTRUCTOR CON SU PROPIO LAYOUT */}
       <Route element={<InstructorLayout />}>
