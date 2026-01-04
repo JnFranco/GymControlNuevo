@@ -105,9 +105,17 @@ export default function InstructorLayout() {
         </Button>
 
         {/* ALUMNOS */}
-        <Button className="menu-button">
+        <Button
+          className={`menu-button ${
+            location.pathname === "/entrenador/alumnos" ? "active" : ""
+          }`}
+          onClick={() => navigate("/entrenador/alumnos")}
+        >
           <Group className="menu-icon" /> Alumnos
         </Button>
+        {/* <Button className="menu-button">
+          <Group className="menu-icon" /> Alumnos
+        </Button> */}
 
         {/* MI PERFIL */}
         <Button

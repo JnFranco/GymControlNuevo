@@ -1,0 +1,96 @@
+/* ESTADÍSTICAS */
+.stat-card-alumnos {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.stat-card-alumnos:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2) !important;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.875rem !important;
+  margin-bottom: 4px !important;
+}
+
+.stat-value {
+  color: #ffd700 !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+}
+
+/* BÚSQUEDA */
+.search-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* TABLA */
+.table-container-alumnos {
+  background: rgba(0, 0, 0, 0.4) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+
+.table-container-alumnos .MuiTableCell-head {
+  color: #ffd700 !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  background: rgba(255, 215, 0, 0.1) !important;
+  border-bottom: 2px solid #ffd700 !important;
+}
+
+.table-container-alumnos .MuiTableCell-body {
+  color: white !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.table-row-hover {
+  transition: all 0.3s ease !important;
+}
+
+.table-row-hover:hover {
+  background: rgba(255, 215, 0, 0.05) !important;
+}
+
+/* ERROR BOX */
+.error-box {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+}
+
+/* NOTA */
+.note-alumnos {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(33, 150, 243, 0.1);
+  border-radius: 12px;
+  border-left: 4px solid #2196f3;
+}
+
+.note-alumnos p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .table-container-alumnos {
+    overflow-x: auto;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem !important;
+  }
+}

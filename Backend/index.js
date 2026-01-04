@@ -28,6 +28,8 @@ const horariosRoutes = require('./routes/horarios.routes');
 const reservasRoutes = require('./routes/reservas.routes');
 const asistenciasRoutes = require('./routes/asistencias.routes');
 
+const alumnosRoutes = require('./routes/alumnos.routes');
+
 // 👤 DASHBOARD CLIENTE / INSTRUCTOR
 const misClasesRoutes = require('./routes/mis-clases.routes');
 const misReservasRoutes = require('./routes/mis-reservas.routes');
@@ -48,7 +50,9 @@ app.use('/api/clases', clasesRoutes);
 app.use('/api/horarios', horariosRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/asistencias', asistenciasRoutes);
+app.use('/api/alumnos', alumnosRoutes);
 
+// const alumnosRoutes = require('./routes/alumnos.routes');
 // 👉 CLIENTE / INSTRUCTOR
 app.use('/api', misClasesRoutes);
 app.use('/api', misReservasRoutes);
