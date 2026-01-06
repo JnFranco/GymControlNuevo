@@ -26,19 +26,24 @@ exports.getEstadisticas = async (req, res) => {
   try {
     const [rows] = await db.execute(`
       SELECT 
-        DATE_FORMAT(fecha_asistencia, '%W') AS dia,
+        DATE(fecha_asistencia) AS dia,
         COUNT(*) AS asistencias
       FROM asistencias
       WHERE presente = 1
-        AND fecha_asistencia >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        AND fecha_asistencia BETWEEN
+          DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+          AND CURDATE()
       GROUP BY dia
-      ORDER BY fecha_asistencia
+      ORDER BY dia ASC
     `);
+
+    console.log("📊 DATA ESTADÍSTICAS:", rows);
 
     res.json(rows);
   } catch (error) {
-    console.error(error);
+    console.error("❌ ERROR ESTADÍSTICAS:", error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
