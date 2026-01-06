@@ -1,5 +1,4 @@
 import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import { useNavigate, Link } from 'react-router-dom';
 import api from "../api/axios";
 import { Box, Button, Typography, Paper, Avatar, CssBaseline, TextField } from "@mui/material";
@@ -16,147 +15,135 @@ export default function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Validación simple de correo
+    // Validacion de formato de correo
     const esCorreoValido = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    // Login real con validaciones y mensajes amigables
+    // Funcion principal de inicio de sesion
     const handleLogin = async (e) => {
-            e.preventDefault(); // Evita que la página se recargue al enviar el formulario
-            try {
-                const res = await api.post("/usuarios/login", { correo, password });
-                
-                // 1. Verificamos en la consola del navegador qué llega exactamente
-                console.log("📌 OBJETO RECIBIDO DEL BACKEND:", res.data);
+        e.preventDefault();
+        setLoading(true);
+        setError("");
 
-                if (res.data && res.data.rol) {
-                    // Guardamos los datos en el localStorage
-                    localStorage.setItem("usuario", JSON.stringify(res.data));
+        try {
+            const res = await api.post("/usuarios/login", { correo, password });
+            
+            // Verificacion de respuesta y rol
+            if (res.data && res.data.rol) {
+                localStorage.setItem("usuario", JSON.stringify(res.data));
+                const rolRecibido = res.data.rol;
 
-                    const rolRecibido = res.data.rol; // Ejemplo: "Administrador"
-
-                    // 2. Redirección manual basada en el nombre exacto de la BD
-                    if (rolRecibido === "Administrador") {
-                        console.log("🚀 Redirigiendo a panel de Administrador...");
-                        nav("/administrador");
-                    } else if (rolRecibido === "Entrenador") {
-                        console.log("🚀 Redirigiendo a panel de Entrenador...");
-                        nav("/entrenador");
-                    } else {
-                        console.log("🚀 Redirigiendo a panel de Cliente...");
-                        nav("/cliente");
-                    }
+                // Redireccion por rol
+                if (rolRecibido === "Administrador") {
+                    nav("/administrador");
+                } else if (rolRecibido === "Entrenador") {
+                    nav("/entrenador");
                 } else {
-                    console.error("❌ El backend no devolvió la propiedad 'rol'");
-                    alert("Error: No se pudo determinar el rol del usuario.");
+                    nav("/cliente");
                 }
-
-            } catch (error) {
-                console.error("❌ ERROR EN LA PETICIÓN:", error);
-                alert("Usuario o contraseña incorrectos");
+            } else {
+                setError("Error: El servidor no devolvio el rol del usuario.");
             }
-        };
+
+        } catch (error) {
+            console.error(error);
+            setError("Correo o contrasena incorrectos");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <ThemeProvider theme={gymTheme}>
-        <CssBaseline />
-
-        <Box
-            sx={{
-            height: "100vh",
-            background: `linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url(${Background}) center/cover no-repeat`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
-            }}
-        >
-            <Paper
-            elevation={20}
-            sx={{
-                p: 5,
-                borderRadius: 5,
-                width: 420,
-                backdropFilter: "blur(10px)",
-                backgroundColor: "rgba(0,0,0,.6)"
-            }}
+            <CssBaseline />
+            <Box
+                sx={{
+                    height: "100vh",
+                    background: `linear-gradient(rgba(0,0,0,.5), rgba(0,0,0,.5)), url(${Background}) center/cover no-repeat`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}
             >
-            <Box display="flex" flexDirection="column" alignItems="center" gap={3}>
-                <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main" }}>
-                <FitnessCenterIcon sx={{ fontSize: 40 }} />
-                </Avatar>
-
-                <Typography variant="h4" fontWeight={700}>
-                GymControl
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary">
-                Inicia sesión para continuar
-                </Typography>
-
-                {/* INPUT CORREO con ícono y validación */}
-                <TextField
-                label="Correo"
-                variant="filled"
-                fullWidth
-                type="email"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                error={!!error && !esCorreoValido(correo)}
-                helperText={error && !esCorreoValido(correo) ? "Ingresa un correo válido" : ""}
-                InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1, color: "grey.400" }} /> }}
-                sx={{ input: { color: "white" }, label: { color: "#ccc" } }}
-                />
-
-                {/* INPUT CONTRASEÑA con ícono y validación */}
-                <TextField
-                label="Contraseña"
-                variant="filled"
-                fullWidth
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                error={!!error && !password}
-                helperText={error && !password ? "Ingresa tu contraseña" : ""}
-                InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: "grey.400" }} /> }}
-                sx={{ input: { color: "white" }, label: { color: "#ccc" } }}
-                />
-
-                {/* MENSAJE DE ERROR (debajo, no ventana) */}
-                {error && (
-                <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                    {error}
-                </Typography>
-                )}
-
-                {/* BOTÓN LOGIN con estado y validación */}
-                <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                onClick={handleLogin}
-                disabled={loading || !correo || !password || !esCorreoValido(correo)}
-                sx={{ mt: 2, borderRadius: 3 }}
+                <Paper
+                    elevation={20}
+                    sx={{
+                        p: 5,
+                        borderRadius: 5,
+                        width: 420,
+                        backdropFilter: "blur(10px)",
+                        backgroundColor: "rgba(0,0,0,.6)"
+                    }}
                 >
-                {loading ? "Verificando..." : "Iniciar sesión"}
-                </Button>
+                    <Box display="flex" flexDirection="column" alignItems="center" gap={3}>
+                        <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main" }}>
+                            <FitnessCenterIcon sx={{ fontSize: 40 }} />
+                        </Avatar>
 
-                {/* 👇 AGREGAR ESTE CÓDIGO NUEVO */}
-<Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-  ¿No tienes cuenta?{' '}
-  <Link 
-    to="/register" 
-    style={{ 
-      color: '#90caf9', 
-      textDecoration: 'none',
-      fontWeight: 500
-    }}
-  >
-    Regístrate aquí
-  </Link>
-</Typography>
-                
+                        <Typography variant="h4" fontWeight={700}>
+                            GymControl
+                        </Typography>
+
+                        <Typography variant="body2" color="text.secondary">
+                            Inicia sesion para continuar
+                        </Typography>
+
+                        <TextField
+                            label="Correo"
+                            variant="filled"
+                            fullWidth
+                            type="email"
+                            value={correo}
+                            onChange={(e) => setCorreo(e.target.value)}
+                            error={!!error && !esCorreoValido(correo)}
+                            InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1, color: "grey.400" }} /> }}
+                            sx={{ input: { color: "white" }, label: { color: "#ccc" } }}
+                        />
+
+                        <TextField
+                            label="Contrasena"
+                            variant="filled"
+                            fullWidth
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            error={!!error}
+                            InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: "grey.400" }} /> }}
+                            sx={{ input: { color: "white" }, label: { color: "#ccc" } }}
+                        />
+
+                        {error && (
+                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                                {error}
+                            </Typography>
+                        )}
+
+                        <Button
+                            fullWidth
+                            variant="contained"
+                            size="large"
+                            onClick={handleLogin}
+                            disabled={loading || !correo || !password || !esCorreoValido(correo)}
+                            sx={{ mt: 2, borderRadius: 3 }}
+                        >
+                            {loading ? "Verificando..." : "Iniciar sesion"}
+                        </Button>
+
+                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                            ¿No tienes cuenta?{' '}
+                            <Link 
+                                to="/register" 
+                                style={{ 
+                                    color: '#90caf9', 
+                                    textDecoration: 'none',
+                                    fontWeight: 500
+                                }}
+                            >
+                                Registrate aqui
+                            </Link>
+                        </Typography>
+                    </Box>
+                </Paper>
             </Box>
-            </Paper>
-        </Box>
         </ThemeProvider>
     );
 }

@@ -26,15 +26,16 @@ export default function UsuariosView() {
 
   // 1. Cargar usuarios desde el Backend
   const fetchUsuarios = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get("/usuarios"); // Tu ruta de backend
-      setUsuarios(res.data);
-    } catch (error) {
-      console.error("Error al traer usuarios:", error);
-    } finally {
-      setLoading(false);
-    }
+  try {
+    setLoading(true);
+    const res = await api.get("/usuarios");
+    console.log("DATOS DE LA BD:", res.data); // <--- AGREGA ESTO
+    setUsuarios(res.data);
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    setLoading(false);
+  }
   };
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function UsuariosView() {
           onClick={() => setShowForm(true)}
           sx={{ bgcolor: '#FFD700', color: 'black', fontWeight: 700, '&:hover': { bgcolor: '#ccac00' } }}
         >
-          Nuevo Usuario
+          Nuevo Miembro
         </Button>
       </Box>
 
