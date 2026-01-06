@@ -1,8 +1,19 @@
+
+
 const express = require('express');
 const router = express.Router();
 const pagosController = require('../controllers/pagos.controller');
 
-router.get('/pagos/pendientes', pagosController.getPagosPendientes);
-router.post('/pagos/cobrar/:id', pagosController.cobrarPago);
+// 🧪 TEST
+router.get('/test', (req, res) => {
+  res.json({ ok: true });
+});
+
+// ✅ ADMIN PAGOS
+router.get('/pendientes', pagosController.getPagosPendientes);
+router.get('/atrasados', pagosController.getPagosAtrasadosAdmin);
+router.post('/cobrar/:id', pagosController.cobrarPago);
+
+
 
 module.exports = router;

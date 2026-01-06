@@ -10,24 +10,37 @@ export const getAdminStats = async () => {
 
 /* ===============================
    PAGOS PENDIENTES
-================================ */
-export const getPagosPendientes = async () => {
+================================ /*
+/*export const getPagosPendientes = async () => {
   const res = await api.get("/pagos/pendientes");
   return res.data;
-};
+};/*
 
 /* ===============================
    COBRAR PAGO
 ================================ */
 export const cobrarPago = async (pagoId) => {
-  const res = await api.post(`/pagos/cobrar/${pagoId}`);
-  return res.data;
+  return api.post(`/admin/pagos/cobrar/${pagoId}`);
 };
+
 
 /* ===============================
    ASISTENCIAS (GRÁFICA)
 ================================ */
 export const getAsistenciasSemana = async () => {
   const res = await api.get("/admin/asistencias-semana");
+  return res.data;
+};
+
+/* ===============================
+  PAgos  ()
+================================ */
+export const getPagosPendientesAdmin = async () => {
+  const res = await api.get('/admin/pagos/pendientes');
+  return res.data;
+};
+
+export const getPagosAtrasadosAdmin = async () => {
+  const res = await api.get('/admin/pagos/atrasados');
   return res.data;
 };
