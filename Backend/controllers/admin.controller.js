@@ -9,7 +9,10 @@ exports.getResumen = async (req, res) => {
     const [entrenadores] = await db.execute('SELECT COUNT(*) as total FROM usuarios WHERE id_rol = 2 AND activo = 1');
     
     // 3. Contar clases activas
-    const [clases] = await db.execute('SELECT COUNT(*) as total FROM clases');
+    const [clases] = await db.execute(
+      'SELECT COUNT(*) as total FROM clases WHERE activo = 1'
+    );
+
 
     res.json({
       clientes: clientes[0].total,

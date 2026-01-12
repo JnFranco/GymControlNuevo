@@ -45,8 +45,8 @@ export default function Login() {
             }
 
         } catch (error) {
-            console.error(error);
-            setError("Correo o contrasena incorrectos");
+            console.error(error.response?.data);
+            setError(error.response?.data?.mensaje || "Error al iniciar sesión");
         } finally {
             setLoading(false);
         }

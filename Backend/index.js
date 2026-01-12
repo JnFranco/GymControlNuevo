@@ -35,6 +35,10 @@ const misClasesRoutes = require('./routes/mis-clases.routes');
 const misReservasRoutes = require('./routes/mis-reservas.routes');
 const miMembresiaRoutes = require('./routes/mi-membresia.routes');
 
+const reportesRoutes = require("./routes/reportes.routes");
+app.use("/api/reportes", reportesRoutes);
+
+
 // =============================================
 // USAR RUTAS (ORDEN Y PREFIJOS CORRECTOS)
 // =============================================

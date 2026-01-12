@@ -5,6 +5,9 @@ import DashboardHome from "./views/DashboardHome";
 import RegisterUsuarios from "../Register"; // Tu componente de usuarios
 import UsuariosView from './views/UsuariosView';
 import EntrenadoresView from './views/EntrenadoresView';
+import ClasesView from './views/ClasesView';
+import ReportesView from './views/ReportesView';
+import ConfiguracionView from './views/ConfiguracionView';
 
 
 export default function DashboardAdmin() {
@@ -26,6 +29,9 @@ export default function DashboardAdmin() {
     {activeTab === 'dashboard' && <DashboardHome />}
     {activeTab === 'usuarios' && <UsuariosView />}
     {activeTab === 'entrenadores' && <EntrenadoresView />}
+    {activeTab === 'clases' && <ClasesView/>}
+    {activeTab === 'reportes' && <ReportesView/>}
+    {activeTab === 'config' && <ConfiguracionView/>}
     </Box>
 
 
