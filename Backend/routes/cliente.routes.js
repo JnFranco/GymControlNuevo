@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/cliente.controller");
-const auth = require("../middlewares/auth"); // tu middleware JWT
+const clienteController = require("../controllers/cliente.controller");
 
-router.get("/clases", auth, controller.obtenerClasesDisponibles);
-router.post("/reservar", auth, controller.reservarClase);
-router.put("/cancelar/:idHorario", auth, controller.cancelarReserva);
+// Fíjate bien en los nombres después del punto:
+router.get('/dashboard/:id', clienteController.getDashboardData_cli);
+router.get("/clases", clienteController.obtenerClases_cli); 
+router.post("/reservar", clienteController.reservarClase_cli);
+router.put("/cancelar/:idHorario", clienteController.cancelarReserva_cli);
 
 module.exports = router;

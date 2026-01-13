@@ -38,6 +38,14 @@ const miMembresiaRoutes = require('./routes/mi-membresia.routes');
 const reportesRoutes = require("./routes/reportes.routes");
 app.use("/api/reportes", reportesRoutes);
 
+// 1. Importar las rutas
+const clienteRoutes = require('./routes/cliente.routes'); 
+
+// 2. Usar los middlewares básicos
+app.use(express.json());
+
+// 3. Registrar la ruta principal
+app.use('/api/cliente', clienteRoutes);
 
 // =============================================
 // USAR RUTAS (ORDEN Y PREFIJOS CORRECTOS)
