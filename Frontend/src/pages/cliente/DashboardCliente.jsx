@@ -1,294 +1,341 @@
-import { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Card, CardContent, Button, LinearProgress, Chip } from "@mui/material";
-import { 
-  FitnessCenter as FitnessIcon,
-  CalendarToday as CalendarIcon,
-  TrendingUp as TrendingIcon,
-  Stars as StarsIcon
-} from "@mui/icons-material";
+import { useState } from "react";
+import { Box } from "@mui/material";
+
+import SidebarCliente from "./components/SidebarCliente";
+
+// Vistas del cliente
+import InicioView from "./views/InicioView";
+import ClasesView from "./views/ClasesView";
+import ProgresoView from "./views/ProgresoView";
+import PagosView from "./views/PagosView";
+import PerfilView from "./views/PerfilView";
 
 export default function DashboardCliente() {
-  const [usuario, setUsuario] = useState(null);
-
-  useEffect(() => {
-    const usuarioData = localStorage.getItem("usuario");
-    if (usuarioData) {
-      setUsuario(JSON.parse(usuarioData));
-    }
-  }, []);
-
-  // Datos de ejemplo
-  const miPlan = {
-    nombre: "Plan Premium",
-    estado: "Activo",
-    diasRestantes: 15,
-    progreso: 50
-  };
-
-  const estadisticas = {
-    asistenciasEsteMes: 18,
-    diasConsecutivos: 5,
-    caloriasQuemadas: 3250,
-    metaCumplida: 72
-  };
+  // IMPORTANTE: debe coincidir con el menú
+  const [activeTab, setActiveTab] = useState("inicio");
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* HEADER */}
-      <Box mb={4}>
-        <Typography variant="h3" fontWeight={700} gutterBottom>
-          Mi Panel
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          ¡Hola, {usuario?.nombre}! 💪 Sigue así
-        </Typography>
-      </Box>
-
-      {/* MI MEMBRESÍA */}
-      <Card sx={{ 
-        mb: 4,
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        bgcolor: "#000",
         color: "white"
-      }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Box>
-              <Typography variant="h5" fontWeight={700}>
-                {miPlan.nombre}
-              </Typography>
-              <Typography variant="body2">
-                Tu membresía actual
-              </Typography>
-            </Box>
-            <Chip 
-              label={miPlan.estado} 
-              color="success" 
-              sx={{ fontWeight: 600 }}
-            />
-          </Box>
-          
-          <Box mt={2}>
-            <Typography variant="body2" mb={1}>
-              Días restantes: {miPlan.diasRestantes} días
-            </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={miPlan.progreso}
-              sx={{ 
-                height: 8, 
-                borderRadius: 5,
-                backgroundColor: "rgba(255,255,255,0.3)",
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: "white"
-                }
-              }}
-            />
-          </Box>
-        </CardContent>
-      </Card>
+      }}
+    >
+      {/* SIDEBAR IZQUIERDO */}
+      <SidebarCliente activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* ESTADÍSTICAS */}
-      <Grid container spacing={3} mb={4}>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-            color: "white"
-          }}>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {estadisticas.asistenciasEsteMes}
-                  </Typography>
-                  <Typography variant="body2">
-                    Asistencias este mes
-                  </Typography>
-                </Box>
-                <CalendarIcon sx={{ fontSize: 50, opacity: 0.5 }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-            color: "white"
-          }}>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {estadisticas.diasConsecutivos}
-                  </Typography>
-                  <Typography variant="body2">
-                    Días consecutivos 🔥
-                  </Typography>
-                </Box>
-                <TrendingIcon sx={{ fontSize: 50, opacity: 0.5 }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-            color: "white"
-          }}>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {estadisticas.caloriasQuemadas}
-                  </Typography>
-                  <Typography variant="body2">
-                    Calorías quemadas
-                  </Typography>
-                </Box>
-                <FitnessIcon sx={{ fontSize: 50, opacity: 0.5 }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-            color: "white"
-          }}>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Box>
-                  <Typography variant="h4" fontWeight={700}>
-                    {estadisticas.metaCumplida}%
-                  </Typography>
-                  <Typography variant="body2">
-                    Meta cumplida
-                  </Typography>
-                </Box>
-                <StarsIcon sx={{ fontSize: 50, opacity: 0.5 }} />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-      </Grid>
-
-      {/* ACCESOS RÁPIDOS */}
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12}>
-          <Typography variant="h5" fontWeight={600} mb={2}>
-            Accesos Rápidos
-          </Typography>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-            }}
-          >
-            💪 Mi Rutina
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-            }}
-          >
-            📅 Mis Clases
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
-            }}
-          >
-            📊 Mi Progreso
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
-            }}
-          >
-            📅 Reservar Clase
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
-            }}
-          >
-            👤 Mi Perfil
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ 
-              py: 3,
-              background: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)"
-            }}
-          >
-            💳 Renovar Plan
-          </Button>
-        </Grid>
-
-      </Grid>
-
-      {/* MI RUTINA DE HOY */}
-      <Box>
-        <Typography variant="h5" fontWeight={600} mb={2}>
-          Mi Rutina de Hoy
-        </Typography>
-        <Card sx={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
-          <CardContent>
-            <Typography variant="body1" color="text.secondary" textAlign="center" py={3}>
-              📝 No tienes rutina asignada aún.
-              <br />
-              Consulta con tu entrenador.
-            </Typography>
-          </CardContent>
-        </Card>
+      {/* CONTENIDO */}
+      <Box sx={{ flexGrow: 1, p: 4, mt: 2 }}>
+        {activeTab === "inicio" && <InicioView />}
+        {activeTab === "clases" && <ClasesView />}
+        {activeTab === "progreso" && <ProgresoView />}
+        {activeTab === "pagos" && <PagosView />}
+        {activeTab === "perfil" && <PerfilView />}
       </Box>
-
     </Box>
   );
 }
+
+
+
+
+
+
+
+
+//import { useState, useEffect } from 'react';
+//import { Box, Typography, Grid, Card, CardContent, Button, LinearProgress, Chip } from "@mui/material";
+//import { 
+//  FitnessCenter as FitnessIcon,
+//  CalendarToday as CalendarIcon,
+//  TrendingUp as TrendingIcon,
+//  Stars as StarsIcon
+//} from "@mui/icons-material";
+//
+//export default function DashboardCliente() {
+//  const [usuario, setUsuario] = useState(null);
+//
+//  useEffect(() => {
+//    const usuarioData = localStorage.getItem("usuario");
+//    if (usuarioData) {
+//      setUsuario(JSON.parse(usuarioData));
+//    }
+//  }, []);
+//
+//  // Datos de ejemplo
+//  const miPlan = {
+//    nombre: "Plan Premium",
+//    estado: "Activo",
+//    diasRestantes: 15,
+//    progreso: 50
+//  };
+//
+//  const estadisticas = {
+//    asistenciasEsteMes: 18,
+//    diasConsecutivos: 5,
+//    caloriasQuemadas: 3250,
+//    metaCumplida: 72
+//  };
+//
+//  return (
+//    <Box sx={{ p: 3 }}>
+//      {/* HEADER */}
+//      <Box mb={4}>
+//        <Typography variant="h3" fontWeight={700} gutterBottom>
+//          Mi Panel
+//        </Typography>
+//        <Typography variant="body1" color="text.secondary">
+//          ¡Hola, {usuario?.nombre}! 💪 Sigue así
+//        </Typography>
+//      </Box>
+//
+//      {/* MI MEMBRESÍA */}
+//      <Card sx={{ 
+//        mb: 4,
+//        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+//        color: "white"
+//      }}>
+//        <CardContent>
+//          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+//            <Box>
+//              <Typography variant="h5" fontWeight={700}>
+//                {miPlan.nombre}
+//              </Typography>
+//              <Typography variant="body2">
+//                Tu membresía actual
+//              </Typography>
+//            </Box>
+//            <Chip 
+//              label={miPlan.estado} 
+//              color="success" 
+//              sx={{ fontWeight: 600 }}
+//            />
+//          </Box>
+//          
+//          <Box mt={2}>
+//            <Typography variant="body2" mb={1}>
+//              Días restantes: {miPlan.diasRestantes} días
+//            </Typography>
+//            <LinearProgress 
+//              variant="determinate" 
+//              value={miPlan.progreso}
+//              sx={{ 
+//                height: 8, 
+//                borderRadius: 5,
+//                backgroundColor: "rgba(255,255,255,0.3)",
+//                '& .MuiLinearProgress-bar': {
+//                  backgroundColor: "white"
+//                }
+//              }}
+//            />
+//          </Box>
+//        </CardContent>
+//      </Card>
+//
+//      {/* ESTADÍSTICAS */}
+//      <Grid container spacing={3} mb={4}>
+//        
+//        <Grid item xs={12} sm={6} md={3}>
+//          <Card sx={{ 
+//            background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+//            color: "white"
+//          }}>
+//            <CardContent>
+//              <Box display="flex" justifyContent="space-between" alignItems="center">
+//                <Box>
+//                  <Typography variant="h4" fontWeight={700}>
+//                    {estadisticas.asistenciasEsteMes}
+//                  </Typography>
+//                  <Typography variant="body2">
+//                    Asistencias este mes
+//                  </Typography>
+//                </Box>
+//                <CalendarIcon sx={{ fontSize: 50, opacity: 0.5 }} />
+//              </Box>
+//            </CardContent>
+//          </Card>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={3}>
+//          <Card sx={{ 
+//            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+//            color: "white"
+//          }}>
+//            <CardContent>
+//              <Box display="flex" justifyContent="space-between" alignItems="center">
+//                <Box>
+//                  <Typography variant="h4" fontWeight={700}>
+//                    {estadisticas.diasConsecutivos}
+//                  </Typography>
+//                  <Typography variant="body2">
+//                    Días consecutivos 🔥
+//                  </Typography>
+//                </Box>
+//                <TrendingIcon sx={{ fontSize: 50, opacity: 0.5 }} />
+//              </Box>
+//            </CardContent>
+//          </Card>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={3}>
+//          <Card sx={{ 
+//            background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+//            color: "white"
+//          }}>
+//            <CardContent>
+//              <Box display="flex" justifyContent="space-between" alignItems="center">
+//                <Box>
+//                  <Typography variant="h4" fontWeight={700}>
+//                    {estadisticas.caloriasQuemadas}
+//                  </Typography>
+//                  <Typography variant="body2">
+//                    Calorías quemadas
+//                  </Typography>
+//                </Box>
+//                <FitnessIcon sx={{ fontSize: 50, opacity: 0.5 }} />
+//              </Box>
+//            </CardContent>
+//          </Card>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={3}>
+//          <Card sx={{ 
+//            background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+//            color: "white"
+//          }}>
+//            <CardContent>
+//              <Box display="flex" justifyContent="space-between" alignItems="center">
+//                <Box>
+//                  <Typography variant="h4" fontWeight={700}>
+//                    {estadisticas.metaCumplida}%
+//                  </Typography>
+//                  <Typography variant="body2">
+//                    Meta cumplida
+//                  </Typography>
+//                </Box>
+//                <StarsIcon sx={{ fontSize: 50, opacity: 0.5 }} />
+//              </Box>
+//            </CardContent>
+//          </Card>
+//        </Grid>
+//
+//      </Grid>
+//
+//      {/* ACCESOS RÁPIDOS */}
+//      <Grid container spacing={3} mb={4}>
+//        <Grid item xs={12}>
+//          <Typography variant="h5" fontWeight={600} mb={2}>
+//            Accesos Rápidos
+//          </Typography>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+//            }}
+//          >
+//            💪 Mi Rutina
+//          </Button>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+//            }}
+//          >
+//            📅 Mis Clases
+//          </Button>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)"
+//            }}
+//          >
+//            📊 Mi Progreso
+//          </Button>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)"
+//            }}
+//          >
+//            📅 Reservar Clase
+//          </Button>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"
+//            }}
+//          >
+//            👤 Mi Perfil
+//          </Button>
+//        </Grid>
+//
+//        <Grid item xs={12} sm={6} md={4}>
+//          <Button
+//            fullWidth
+//            variant="contained"
+//            size="large"
+//            sx={{ 
+//              py: 3,
+//              background: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)"
+//            }}
+//          >
+//            💳 Renovar Plan
+//          </Button>
+//        </Grid>
+//
+//      </Grid>
+//
+//      {/* MI RUTINA DE HOY */}
+//      <Box>
+//        <Typography variant="h5" fontWeight={600} mb={2}>
+//          Mi Rutina de Hoy
+//        </Typography>
+//        <Card sx={{ backgroundColor: "rgba(255,255,255,0.05)" }}>
+//          <CardContent>
+//            <Typography variant="body1" color="text.secondary" textAlign="center" py={3}>
+//              📝 No tienes rutina asignada aún.
+//              <br />
+//              Consulta con tu entrenador.
+//            </Typography>
+//          </CardContent>
+//        </Card>
+//      </Box>
+//
+//    </Box>
+//  );
+//}
 
 
 // import { useState, useEffect } from "react";
