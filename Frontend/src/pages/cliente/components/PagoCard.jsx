@@ -5,27 +5,35 @@ import {
     Button,
     Chip,
     Stack,
-    Divider
+    Divider,
+    Alert
 } from "@mui/material";
 import api from "../../../api/axios";
 
 export default function PagoCard({ pago, onPagoRealizado }) {
     const [loading, setLoading] = useState(false);
+    const [mensaje, setMensaje] = useState("");
 
     const pagar = async (metodo) => {
         try {
         setLoading(true);
+        setMensaje("");
 
-        await api.post(`/pagos/${pago.id}/pagar`, {
+        const res = await api.post(`/pagos/${pago.id}/pagar`, {
             metodo_pago: metodo
         });
 
-        alert(`Pago realizado con ${metodo}`);
+        if (metodo === "Efectivo") {
+            setMensaje(`🧾 Código de pago: ${res.data.codigo}`);
+        } else {
+            setMensaje("✅ Pago realizado con éxito");
+        }
+
         onPagoRealizado();
 
         } catch (err) {
         console.error(err);
-        alert("Error al procesar el pago");
+        setMensaje("❌ Error al procesar el pago");
         } finally {
         setLoading(false);
         }
@@ -39,14 +47,12 @@ export default function PagoCard({ pago, onPagoRealizado }) {
         : "warning";
 
     return (
-        <Box
-        sx={{
-            p: 3,
-            borderRadius: 3,
-            bgcolor: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)"
-        }}
-        >
+        <Box sx={{
+        p: 3,
+        borderRadius: 3,
+        bgcolor: "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.1)"
+        }}>
         <Typography variant="h6" fontWeight={700}>
             {pago.membresia}
         </Typography>
@@ -62,25 +68,25 @@ export default function PagoCard({ pago, onPagoRealizado }) {
         </Typography>
 
         <Box mt={1}>
-            <Chip
-            label={pago.estado}
-            color={colorEstado}
-            size="small"
-            />
+            <Chip label={pago.estado} color={colorEstado} size="small" />
         </Box>
+
+        {mensaje && (
+            <Alert sx={{ mt: 2 }} severity={mensaje.includes("❌") ? "error" : "success"}>
+            {mensaje}
+            </Alert>
+        )}
 
         {pago.estado !== "Pagado" && (
             <>
             <Divider sx={{ my: 2 }} />
-
             <Typography fontWeight={600} mb={1}>
-                Elegir método de pago
+                Método de pago
             </Typography>
 
             <Stack direction="row" spacing={1}>
                 <Button
                 variant="contained"
-                sx={{ bgcolor: "#1976d2" }}
                 disabled={loading}
                 onClick={() => pagar("Tarjeta")}
                 >
@@ -89,7 +95,6 @@ export default function PagoCard({ pago, onPagoRealizado }) {
 
                 <Button
                 variant="contained"
-                sx={{ bgcolor: "#7c4dff" }}
                 disabled={loading}
                 onClick={() => pagar("Yape")}
                 >
@@ -98,11 +103,18 @@ export default function PagoCard({ pago, onPagoRealizado }) {
 
                 <Button
                 variant="contained"
-                sx={{ bgcolor: "#00c853", color: "black" }}
                 disabled={loading}
                 onClick={() => pagar("Plin")}
                 >
                 📲 Plin
+                </Button>
+
+                <Button
+                variant="outlined"
+                disabled={loading}
+                onClick={() => pagar("Efectivo")}
+                >
+                🧾 Efectivo
                 </Button>
             </Stack>
             </>

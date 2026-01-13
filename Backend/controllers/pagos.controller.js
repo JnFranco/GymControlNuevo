@@ -1,4 +1,41 @@
-const db = require('../db/connection');
+const db = require("../db/connection");
+
+exports.pagarMembresia = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { metodo_pago } = req.body;
+
+    if (!metodo_pago) {
+      return res.status(400).json({ mensaje: "Método de pago requerido" });
+    }
+
+    // Simulación de pago
+    const estado = metodo_pago === "Efectivo" ? "Pendiente" : "Pagado";
+
+    // Código solo para efectivo
+    const codigo = metodo_pago === "Efectivo"
+      ? "EF-" + Math.floor(100000 + Math.random() * 900000)
+      : null;
+
+    await db.query(
+      `UPDATE pagos 
+        SET metodo_pago = ?, estado = ?, fecha_pago = CURRENT_DATE
+        WHERE id = ?`,
+      [metodo_pago, estado, id]
+    );
+
+    res.json({
+      mensaje: "Pago procesado correctamente",
+      estado,
+      codigo
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al procesar el pago" });
+  }
+};
+
 
 exports.getPagosPendientes = async (req, res) => {
   try {

@@ -63,12 +63,14 @@ app.use('/api/horarios', horariosRoutes);
 app.use('/api/reservas', reservasRoutes);
 app.use('/api/asistencias', asistenciasRoutes);
 app.use('/api/alumnos', alumnosRoutes);
+app.use("/api/pagos", pagosRoutes);
 
 // const alumnosRoutes = require('./routes/alumnos.routes');
 // 👉 CLIENTE / INSTRUCTOR
 app.use('/api', misClasesRoutes);
 app.use('/api', misReservasRoutes);
 app.use('/api', miMembresiaRoutes);
+
 
 // =============================================
 // RUTA BASE

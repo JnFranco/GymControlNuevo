@@ -13,6 +13,7 @@ router.get('/test', (req, res) => {
 router.get('/pendientes', pagosController.getPagosPendientes);
 router.get('/atrasados', pagosController.getPagosAtrasadosAdmin);
 router.post('/cobrar/:id', pagosController.cobrarPago);
+router.post("/:id/pagar",pagosController.pagarMembresia);
 
 
 

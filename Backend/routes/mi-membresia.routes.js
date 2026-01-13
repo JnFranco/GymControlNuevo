@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const controlador = require("../controllers/mi-membresia.controller");
+const { getMiMembresia } = require("../controllers/mi-membresia.controller");
 
-router.get("/mi-membresia", controlador.getMiMembresia);
+router.get("/mi-membresia", getMiMembresia);
 
 module.exports = router;
