@@ -128,7 +128,7 @@ export default function Login() {
                             {loading ? "Verificando..." : "Iniciar sesion"}
                         </Button>
 
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                        {/* <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                             ¿No tienes cuenta?{' '}
                             <Link 
                                 to="/register" 
@@ -140,7 +140,7 @@ export default function Login() {
                             >
                                 Registrate aqui
                             </Link>
-                        </Typography>
+                        </Typography> */}
                     </Box>
                 </Paper>
             </Box>
