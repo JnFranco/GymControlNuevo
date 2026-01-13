@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import InstructorLayout from './layouts/InstructorLayout';
 import Layout from "./layouts/Layout";
 
 // PAGES - auth
@@ -11,6 +12,11 @@ import DashboardCliente from "./pages/cliente/DashboardCliente";
 //Pages - instructor
 import DashboardInstructor from "./pages/instructor/DashboardInstructor";
 // import MyClasses from "./pages/instructor/MyClasses";
+import MisClases from "./pages/instructor/MisClases";
+import Horarios from "./pages/instructor/Horarios";
+import Asistencias from "./pages/instructor/Asistencias"
+import Alumnos from "./pages/instructor/Alumnos"
+import MiPerfil from "./pages/instructor/MiPerfil"
 
 //Pages - admin
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
@@ -35,7 +41,14 @@ export default function App() {
 
 
         {/* RUTAS INSTRUCTOR */}
-        <Route path="/entrenador" element={<DashboardInstructor />} />
+        <Route path="/entrenador" element={<InstructorLayout />}>
+          <Route index element={<DashboardInstructor />} />
+          <Route path="mis-clases" element={<MisClases/>} />
+          <Route path="horarios" element={<Horarios/>} />
+          <Route path="asistencias" element={<Asistencias/>} />
+          <Route path="alumnos" element={<Alumnos/>} />
+          <Route path="perfil" element={<MiPerfil/>} />
+        </Route> {/* ⬅️ AGREGAR */}
         {/* <Route path="/entrenador/mis-clases" element={<MyClasses />} /> */}
         
         {/* REDIRECT para mantener compatibilidad */}
