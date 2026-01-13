@@ -64,6 +64,9 @@ app.use('/api/reservas', reservasRoutes);
 app.use('/api/asistencias', asistenciasRoutes);
 app.use('/api/alumnos', alumnosRoutes);
 app.use("/api/pagos", pagosRoutes);
+app.use("/api/pagos", require("./routes/pagos.routes"));
+app.use("/api/membresias", require("./routes/membresias.routes"));
+
 
 // const alumnosRoutes = require('./routes/alumnos.routes');
 // 👉 CLIENTE / INSTRUCTOR
