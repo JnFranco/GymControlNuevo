@@ -1,5 +1,32 @@
 const db = require("../db/connection");
 
+exports.getPagosPorUsuario = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        p.id,
+        p.estado,
+        p.monto,
+        p.metodo_pago,
+        m.nombre AS membresia,
+        m.duracion_dias
+      FROM pagos p
+      INNER JOIN membresias m ON p.id_membresia = m.id
+      WHERE p.id_usuario = ?
+      ORDER BY p.id DESC
+    `, [id]);
+
+    // SIEMPRE responder array
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error pagos:", error);
+    res.status(500).json([]);
+  }
+};
+
+
 exports.pagarMembresia = async (req, res) => {
   try {
     const { id } = req.params;
@@ -156,3 +183,25 @@ exports.getPagosAtrasadosAdmin = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.crearPago = async (req, res) => {
+  const { id_usuario, id_membresia } = req.body;
+
+  try {
+    const [[membresia]] = await db.execute(
+      "SELECT costo FROM membresias WHERE id = ?",
+      [id_membresia]
+    );
+
+    await db.execute(`
+      INSERT INTO pagos (id_usuario, id_membresia, monto, estado)
+      VALUES (?, ?, ?, 'Pendiente')
+    `, [id_usuario, id_membresia, membresia.costo]);
+
+    res.json({ message: "Pago creado" });
+  } catch (error) {
+    console.error("❌ Error crear pago:", error);
+    res.status(500).json({ error: "No se pudo crear el pago" });
+  }
+};
+
