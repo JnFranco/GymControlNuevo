@@ -23,9 +23,8 @@ export default function InicioView() {
     const fetchDashboardData = async () => {
       if (!usuario || !usuario.id) {
         console.log('⚠️ No hay usuario o ID en localStorage');
-        // Datos por defecto para desarrollo
         setDatos({
-          membresia: "Plan Básico",
+          membresia: "Sin Membresía",
           dias_restantes: 0,
           progreso_dias: 0,
           estado_pago: "Pendiente",
@@ -41,41 +40,37 @@ export default function InicioView() {
         setLoading(true);
         console.log(`📡 Solicitando datos para usuario ID: ${usuario.id}`);
         
-        // Cambia esta parte en el try:
         const response = await api.get(`/cliente/dashboard/${usuario.id}`);
         console.log('✅ Respuesta del servidor:', response.data);
 
-        // SI el backend devuelve {success: true, data: {...}}
-        if (response.data.success) {
-        setDatos(response.data.data);
-        } 
-        // SI el backend devuelve datos directos (como ahora)
-        else if (response.data.nombre_membresia) {
-        // Adapta los datos al formato que espera tu componente
-        setDatos({
-            membresia: response.data.nombre_membresia,
-            dias_restantes: response.data.dias_restantes,
-            progreso_dias: Math.min(100, Math.round((response.data.dias_restantes / 30) * 100)),
-            estado_pago: "Pagado", // temporal
-            total_asistencias: response.data.total_asistencias,
-            reservas_activas: response.data.total_reservas || 0,
-            entrenador: "Por asignar" // temporal
-        });
-        } else {
-        setError("Formato de respuesta desconocido");
+        // Los datos vienen directamente del array o del objeto del backend
+        const d = Array.isArray(response.data) ? response.data[0] : response.data;
+
+        if (d) {
+          const dias = d.duracion || 0; // O la lógica que prefieras para días restantes
+          const activo = dias > 0;
+
+          setDatos({
+            membresia: d.nombre_membresia || "Sin Membresía",
+            dias_restantes: dias,
+            progreso_dias: activo ? Math.min(100, Math.round((dias / 30) * 100)) : 0,
+            estado_pago: activo ? "Pagado" : "Pendiente", // Lógica dinámica corregida
+            total_asistencias: d.total_asistencias || 0,
+            reservas_activas: d.total_reservas || 0,
+            entrenador: "Por asignar"
+          });
         }
       } catch (err) {
         console.error("❌ Error en la petición:", err.message || err);
         setError("Error de conexión con el servidor");
-        // Datos por defecto
         setDatos({
-          membresia: "Plan Demo",
-          dias_restantes: 30,
-          progreso_dias: 100,
-          estado_pago: "Pagado",
-          total_asistencias: 12,
-          reservas_activas: 3,
-          entrenador: "Entrenador Demo"
+          membresia: "Sin Membresía",
+          dias_restantes: 0,
+          progreso_dias: 0,
+          estado_pago: "Pendiente",
+          total_asistencias: 0,
+          reservas_activas: 0,
+          entrenador: "N/A"
         });
       } finally {
         setLoading(false);
@@ -94,15 +89,15 @@ export default function InicioView() {
     );
   }
 
-  // Usar datos reales o por defecto
+  // Datos finales a mostrar
   const datosMostrar = datos || {
-    membresia: "Plan Demo",
-    dias_restantes: 30,
-    progreso_dias: 100,
-    estado_pago: "Pagado",
-    total_asistencias: 12,
-    reservas_activas: 3,
-    entrenador: "Entrenador Demo"
+    membresia: "Sin Membresía",
+    dias_restantes: 0,
+    progreso_dias: 0,
+    estado_pago: "Pendiente",
+    total_asistencias: 0,
+    reservas_activas: 0,
+    entrenador: "Por asignar"
   };
 
   const tieneMembresia = datosMostrar.dias_restantes > 0;
@@ -133,7 +128,6 @@ export default function InicioView() {
       }}>
         <CardContent sx={{ p: 5 }}>
           <Grid container alignItems="center" spacing={3}>
-            {/* CORREGIDO PARA MUI v2: Eliminamos item prop */}
             <Grid size={{ xs: 12, md: 8 }}>
               <Typography variant="overline" sx={{ color: '#fbc02d', fontWeight: 700 }}>
                 MEMBRESÍA ACTUAL
@@ -165,12 +159,11 @@ export default function InicioView() {
                 </Box>
               ) : (
                 <Typography variant="body1" sx={{ mt: 2, color: 'rgba(255,255,255,0.6)' }}>
-                  No tienes una membresía activa
+                  No tienes una membresía activa en este momento.
                 </Typography>
               )}
             </Grid>
             
-            {/* CORREGIDO PARA MUI v2: Eliminamos item prop */}
             <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'center' }}>
               <Chip 
                 label={datosMostrar.estado_pago.toUpperCase()} 
@@ -192,9 +185,8 @@ export default function InicioView() {
         </CardContent>
       </Card>
 
-      {/* ESTADÍSTICAS - CORREGIDO PARA MUI v2 */}
+      {/* ESTADÍSTICAS */}
       <Grid container spacing={4}>
-        {/* ASISTENCIAS */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ 
             bgcolor: 'rgba(255,255,255,0.02)', 
@@ -217,14 +209,10 @@ export default function InicioView() {
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="caption" sx={{ color: 'gray' }}>
-                Registradas en el sistema
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* RESERVAS */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ 
             bgcolor: 'rgba(255,255,255,0.02)', 
@@ -247,14 +235,10 @@ export default function InicioView() {
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="caption" sx={{ color: 'gray' }}>
-                Reservas confirmadas
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* ENTRENADOR */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Card sx={{ 
             bgcolor: 'rgba(255,255,255,0.02)', 
@@ -277,15 +261,11 @@ export default function InicioView() {
                   </Typography>
                 </Box>
               </Box>
-              <Typography variant="caption" sx={{ color: 'gray' }}>
-                Coach asignado
-              </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
 
-      {/* MENSAJE DE ERROR */}
       {error && (
         <Typography color="error" variant="body2" sx={{ mt: 3, textAlign: 'center' }}>
           {error}

@@ -25,17 +25,18 @@ const ClienteModel = {
     return rows;
   },
 
+  // ✅ MODIFICADO PARA CLASESVIEW
   getClases_cli: async (idUsuario) => {
     const query = `
       SELECT 
         h.id AS horario_id,
         c.nombre AS clase_nombre,
-        u.nombre AS entrenador,
+        CONCAT(u.nombre, ' ', u.apellido) AS entrenador,
         h.dia_semana,
         TIME_FORMAT(h.hora_inicio, '%H:%i') as hora_inicio,
         TIME_FORMAT(h.hora_fin, '%H:%i') as hora_fin,
         h.capacidad - (SELECT COUNT(*) FROM reservas r2 WHERE r2.id_horario = h.id AND r2.estado = 'Confirmada') AS cupos_disponibles,
-        IF((SELECT COUNT(*) FROM reservas r3 WHERE r3.id_horario = h.id AND r3.id_usuario = ? AND r3.estado = 'Confirmada') > 0, 1, 0) AS reservado
+        IF(EXISTS(SELECT 1 FROM reservas r3 WHERE r3.id_horario = h.id AND r3.id_usuario = ? AND r3.estado = 'Confirmada'), 1, 0) AS reservado
       FROM horarios h
       JOIN clases c ON c.id = h.id_clase
       JOIN usuarios u ON u.id = c.id_entrenador

@@ -13,41 +13,73 @@ export default function ClasesView() {
   const [clases, setClases] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Cargar datos desde el Backend
+  // Obtener el usuario actual para filtrar sus reservas
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+
+  // 1. Cargar datos desde el Backend (usando el ID del usuario)
   const cargarDatos = async () => {
+    if (!usuario.id) return;
     try {
       setLoading(true);
-      const res = await api.get('/cliente/clases');
+      // Enviamos el ID del usuario para saber cuáles están reservadas por él
+      const res = await api.get(`/cliente/clases/${usuario.id}`);
       setClases(res.data);
     } catch (error) {
-      console.error("Error al cargar clases", error);
+      console.error("Error al cargar clases:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { cargarDatos(); }, []);
+  useEffect(() => { 
+    cargarDatos(); 
+  }, []);
 
-  // 2. Acciones: Reservar y Cancelar
+  // 2. Acciones: Reservar
   const manejarReserva = async (idHorario) => {
-    await api.post('/cliente/reservar', { idHorario });
-    cargarDatos(); // Recargar para ver cambios
+    try {
+      await api.post('/cliente/reservar', { 
+        idHorario, 
+        idUsuario: usuario.id 
+      });
+      cargarDatos(); // Recargar para actualizar botones y cupos
+    } catch (error) {
+      console.error("Error al reservar:", error);
+      alert("No se pudo completar la reserva.");
+    }
   };
 
+  // 3. Acciones: Cancelar
   const manejarCancelacion = async (idHorario) => {
-    await api.put(`/cliente/cancelar/${idHorario}`);
-    cargarDatos();
+    try {
+      // Usamos POST o DELETE según tu ruta, aquí mantenemos la lógica de envío de ID
+      await api.post('/cliente/cancelar', { 
+        idHorario, 
+        idUsuario: usuario.id 
+      });
+      cargarDatos();
+    } catch (error) {
+      console.error("Error al cancelar:", error);
+      alert("Error al cancelar la reserva.");
+    }
   };
 
-  // Filtrado de la lista
+  // Filtrado de la lista según la pestaña seleccionada
   const clasesAMostrar = vista === 'mis_clases' 
     ? clases.filter(c => c.reservado === 1) 
     : clases;
 
-  if (loading) return <Box display="flex" justifyContent="center" mt={10}><CircularProgress sx={{color: '#fbc02d'}}/></Box>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress sx={{ color: '#fbc02d' }} />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: '1000px', margin: '0 auto', p: 2 }}>
+      
       {/* CABECERA */}
       <Box mb={4} display="flex" justifyContent="space-between" alignItems="center" sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
         <Box>
@@ -85,6 +117,8 @@ export default function ClasesView() {
               }}>
                 <CardContent sx={{ p: 3 }}>
                   <Grid container alignItems="center" spacing={2}>
+                    
+                    {/* FECHA Y HORA */}
                     <Grid item xs={12} sm={3}>
                       <Stack direction="row" spacing={1} alignItems="center" mb={0.5}>
                         <CalendarMonth sx={{ color: '#fbc02d', fontSize: 20 }} />
@@ -96,43 +130,68 @@ export default function ClasesView() {
                       </Stack>
                     </Grid>
 
+                    {/* NOMBRE CLASE Y ENTRENADOR */}
                     <Grid item xs={12} sm={5}>
                       <Typography variant="h5" fontWeight={900}>{clase.clase_nombre}</Typography>
                       <Box display="flex" alignItems="center" gap={1} mt={1}>
                         <Avatar sx={{ width: 24, height: 24, bgcolor: '#fbc02d', color: 'black', fontSize: 12, fontWeight: 700 }}>
-                          {clase.entrenador[0]}
+                          {clase.entrenador ? clase.entrenador[0] : 'T'}
                         </Avatar>
-                        <Typography variant="body2" color="gray">Prof. {clase.entrenador} • {clase.cupos_disponibles} cupos</Typography>
+                        <Typography variant="body2" color="gray">
+                          Prof. {clase.entrenador} • {clase.cupos_disponibles} cupos
+                        </Typography>
                       </Box>
                     </Grid>
 
+                    {/* BOTONES DE ACCIÓN */}
                     <Grid item xs={12} sm={4} sx={{ textAlign: { sm: 'right' } }}>
                       {clase.reservado === 1 ? (
                         <Stack direction="row" spacing={1} justifyContent={{xs: 'flex-start', sm: 'flex-end'}}>
-                          <Button variant="contained" disabled startIcon={<CheckCircle />} sx={{ borderRadius: 3, bgcolor: '#2e7d32 !important', color: 'white !important' }}>
+                          <Button 
+                            variant="contained" 
+                            disabled 
+                            startIcon={<CheckCircle />} 
+                            sx={{ borderRadius: 3, bgcolor: '#2e7d32 !important', color: 'white !important', opacity: '1 !important' }}
+                          >
                             Confirmada
                           </Button>
-                          <Button onClick={() => manejarCancelacion(clase.horario_id)} color="error" sx={{ minWidth: 0, borderRadius: 3 }}><CancelOutlined /></Button>
+                          <Button 
+                            onClick={() => manejarCancelacion(clase.horario_id)} 
+                            color="error" 
+                            sx={{ minWidth: 0, borderRadius: 3, border: '1px solid' }}
+                          >
+                            <CancelOutlined />
+                          </Button>
                         </Stack>
                       ) : (
                         <Button 
-                          variant="outlined" onClick={() => manejarReserva(clase.horario_id)}
+                          variant="outlined" 
+                          onClick={() => manejarReserva(clase.horario_id)}
                           disabled={clase.cupos_disponibles <= 0}
                           startIcon={<AddCircleOutline />}
-                          sx={{ borderRadius: 3, color: '#fbc02d', borderColor: '#fbc02d', fontWeight: 700, px: 4 }}
+                          sx={{ 
+                            borderRadius: 3, 
+                            color: '#fbc02d', 
+                            borderColor: '#fbc02d', 
+                            fontWeight: 700, px: 4,
+                            '&:hover': { borderColor: '#fbc02d', bgcolor: 'rgba(251, 192, 45, 0.1)' }
+                          }}
                         >
                           {clase.cupos_disponibles > 0 ? "Reservar" : "Agotado"}
                         </Button>
                       )}
                     </Grid>
+
                   </Grid>
                 </CardContent>
               </Card>
             </Grid>
           ))
         ) : (
-          <Box sx={{ p: 10, textAlign: 'center', width: '100%', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 5 }}>
-            <Typography color="gray">No hay clases disponibles en esta sección.</Typography>
+          <Box sx={{ p: 10, textAlign: 'center', width: '100%', border: '2px dashed rgba(255,255,255,0.1)', borderRadius: 5, mt: 2 }}>
+            <Typography color="gray">
+              {vista === 'mis_clases' ? "Aún no tienes clases reservadas." : "No hay horarios disponibles."}
+            </Typography>
           </Box>
         )}
       </Grid>

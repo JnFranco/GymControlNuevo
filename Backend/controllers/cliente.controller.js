@@ -100,40 +100,41 @@ exports.getDashboardData_cli = async (req, res) => {
   }
 };
 
-// 📌 OBTENER CLASES
+
+
+// ✅ OBTENER CLASES PARA CLASESVIEW
 exports.obtenerClases_cli = async (req, res) => {
+  const { idUsuario } = req.params;
   try {
-    const idUsuario = req.usuario.id;
-    const results = await ClienteModel.getClases_cli(idUsuario);
-    res.json(results);
+    const rows = await ClienteModel.getClases_cli(idUsuario);
+    res.json(rows);
   } catch (error) {
-    console.error("❌ ERROR CLASES:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error al obtener clases cliente:", error);
+    res.status(500).json({ error: "Error al obtener lista de clases" });
   }
 };
 
-// 📌 RESERVAR CLASE
+// ✅ RESERVAR CLASE
 exports.reservarClase_cli = async (req, res) => {
+  const { idHorario, idUsuario } = req.body;
   try {
-    const { idHorario } = req.body;
-    const idUsuario = req.usuario.id;
     await ClienteModel.reservar_cli(idUsuario, idHorario);
-    res.json({ success: true, message: "Clase reservada" });
+    res.json({ success: true, mensaje: "Reserva exitosa" });
   } catch (error) {
-    console.error("❌ ERROR RESERVA:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error al reservar:", error);
+    res.status(500).json({ error: "Error al procesar reserva" });
   }
 };
 
-// 📌 CANCELAR RESERVA
+// ✅ CANCELAR RESERVA
 exports.cancelarReserva_cli = async (req, res) => {
+  const { idHorario, idUsuario } = req.body;
   try {
-    const { idHorario } = req.params;
-    const idUsuario = req.usuario.id;
     await ClienteModel.cancelar_cli(idUsuario, idHorario);
-    res.json({ success: true, message: "Reserva cancelada" });
+    res.json({ success: true, mensaje: "Reserva cancelada" });
   } catch (error) {
-    console.error("❌ ERROR CANCELAR:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error al cancelar:", error);
+    res.status(500).json({ error: "Error al cancelar" });
   }
 };
+
