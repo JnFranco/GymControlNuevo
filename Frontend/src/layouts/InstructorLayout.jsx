@@ -190,9 +190,9 @@ export default function InstructorLayout() {
               </MenuItem>
 
 
-              <MenuItem onClick={handleMenuClose}>
+              {/* <MenuItem onClick={handleMenuClose}>
                 <Settings sx={{ mr: 1 }} /> Configuración
-              </MenuItem>
+              </MenuItem> */}
               <MenuItem 
                 onClick={handleLogout}
                 sx={{ 
