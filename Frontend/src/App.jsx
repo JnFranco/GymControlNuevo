@@ -48,7 +48,7 @@ export default function App() {
           <Route path="asistencias" element={<Asistencias/>} />
           <Route path="alumnos" element={<Alumnos/>} />
           <Route path="perfil" element={<MiPerfil/>} />
-        </Route> {/* ⬅️ AGREGAR */}
+        </Route> {/* AGREGAR */}
         {/* <Route path="/entrenador/mis-clases" element={<MyClasses />} /> */}
         
         {/* REDIRECT para mantener compatibilidad */}
