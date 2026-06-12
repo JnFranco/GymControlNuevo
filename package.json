@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "docx": "^9.7.1",
+    "opencode-ai": "^1.14.40"
+  }
+}

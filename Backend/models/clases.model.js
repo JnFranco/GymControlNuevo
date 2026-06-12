@@ -150,17 +150,6 @@ async function eliminarHorariosPorClase(id_clase) {
   );
 }
 
-// ✅ Crear horario
-async function crearHorario({ id_clase, dia_semana, hora_inicio, hora_fin, capacidad }) {
-  await db.query(
-    `
-    INSERT INTO horarios (id_clase, dia_semana, hora_inicio, hora_fin, capacidad)
-    VALUES (?, ?, ?, ?, ?)
-    `,
-    [id_clase, dia_semana, hora_inicio, hora_fin, capacidad]
-  );
-}
-
 // 🔍 Verificar cruce de horarios para un entrenador (con detalle)
 async function existeCruceHorario({
   id_entrenador,
@@ -206,7 +195,6 @@ module.exports = {
   eliminarClase,
   crearHorario,
   actualizarHorarioPorClase,
-  crearHorario,
   eliminarHorariosPorClase,
   existeCruceHorario
 };

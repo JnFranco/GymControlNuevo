@@ -97,6 +97,12 @@ exports.updateClase = async (req, res) => {
   try {
     const idClase = req.params.id;
 
+    // Verificar que la clase existe
+    const claseExistente = await ClasesModel.obtenerClasePorId(idClase);
+    if (!claseExistente) {
+      return res.status(404).json({ mensaje: 'Clase no encontrada' });
+    }
+
     const {
       nombre,
       descripcion,

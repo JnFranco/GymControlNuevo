@@ -1,5 +1,6 @@
 const db = require("../db/connection");
 const ClienteModel = require('../models/cliente.model');
+const ReservasModel = require('../models/reservas.model');
 
 // 📌 Obtener clases disponibles con horarios y cupos
 exports.obtenerClasesDisponibles = async (req, res) => {
@@ -39,14 +40,10 @@ exports.reservarClase = async (req, res) => {
   const { idHorario } = req.body;
 
   try {
-    await db.query(`
-      INSERT INTO reservas (id_usuario, id_horario, estado)
-      VALUES (?, ?, 'Confirmada')
-    `, [req.usuario.id, idHorario]);
-
-    res.json({ message: "Clase reservada" });
+    const id = await ReservasModel.crearReserva(req.usuario.id, idHorario);
+    res.json({ id, message: "Clase reservada" });
   } catch (error) {
-    res.status(500).json({ message: "Error al reservar" });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -55,14 +52,13 @@ exports.cancelarReserva = async (req, res) => {
   const { idHorario } = req.params;
 
   try {
-    await db.query(`
-      UPDATE reservas
-      SET estado = 'Cancelada'
-      WHERE id_usuario = ? AND id_horario = ?
-    `, [req.usuario.id, idHorario]);
-
+    const affected = await ReservasModel.cancelarReserva(req.usuario.id, idHorario);
+    if (affected === 0) return res.status(404).json({ message: "Reserva no encontrada" });
     res.json({ message: "Reserva cancelada" });
   } catch (error) {
+    if (error.message.includes('No se puede cancelar')) {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: "Error al cancelar" });
   }
 };
@@ -114,27 +110,42 @@ exports.obtenerClases_cli = async (req, res) => {
   }
 };
 
-// ✅ RESERVAR CLASE
+// ✅ RESERVAR CLASE CON VALIDACIÓN
 exports.reservarClase_cli = async (req, res) => {
   const { idHorario, idUsuario } = req.body;
   try {
-    await ClienteModel.reservar_cli(idUsuario, idHorario);
-    res.json({ success: true, mensaje: "Reserva exitosa" });
+    if (!idHorario || !idUsuario) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    const id = await ReservasModel.crearReserva(idUsuario, idHorario);
+    res.json({ success: true, id, mensaje: "Reserva exitosa" });
   } catch (error) {
     console.error("❌ Error al reservar:", error);
-    res.status(500).json({ error: "Error al procesar reserva" });
+    res.status(400).json({ error: error.message });
   }
 };
 
-// ✅ CANCELAR RESERVA
+// ✅ CANCELAR RESERVA (usa usuario del token, no del body)
 exports.cancelarReserva_cli = async (req, res) => {
-  const { idHorario, idUsuario } = req.body;
+  const { idHorario } = req.body;
+  const idUsuario = req.usuario?.id;
   try {
-    await ClienteModel.cancelar_cli(idUsuario, idHorario);
+    if (!idHorario || !idUsuario) {
+      return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
+    const affected = await ReservasModel.cancelarReserva(idUsuario, idHorario);
+    if (affected === 0) {
+      return res.status(404).json({ error: "Reserva activa no encontrada" });
+    }
     res.json({ success: true, mensaje: "Reserva cancelada" });
   } catch (error) {
     console.error("❌ Error al cancelar:", error);
-    res.status(500).json({ error: "Error al cancelar" });
+    if (error.message.includes('No se puede cancelar')) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -22,17 +22,17 @@ exports.getReservaById = async (req, res) => {
   }
 };
 
-// ✅ Crear nueva reserva
+// ✅ Crear nueva reserva CON VALIDACIÓN
 exports.createReserva = async (req, res) => {
   try {
     const { id_usuario, id_horario } = req.body;
     if (!id_usuario || !id_horario)
       return res.status(400).json({ mensaje: 'Faltan campos obligatorios' });
 
-    const id = await ReservasModel.crearReserva({ id_usuario, id_horario });
+    const id = await ReservasModel.crearReserva(id_usuario, id_horario);
     res.status(201).json({ id, mensaje: 'Reserva creada correctamente' });
   } catch (error) {
-    res.status(500).json({ mensaje: 'Error al crear reserva', error });
+    res.status(400).json({ mensaje: error.message });
   }
 };
 

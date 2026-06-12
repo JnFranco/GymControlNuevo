@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const ReservasModel = require('../models/reservas.model');
 
 const ClienteModel = {
   getDashboard: async (id) => {
@@ -48,13 +49,11 @@ const ClienteModel = {
   },
 
   reservar_cli: async (idUsuario, idHorario) => {
-    const query = `INSERT INTO reservas (id_usuario, id_horario, estado) VALUES (?, ?, 'Confirmada')`;
-    return await db.query(query, [idUsuario, idHorario]);
+    return await ReservasModel.crearReserva(idUsuario, idHorario);
   },
 
   cancelar_cli: async (idUsuario, idHorario) => {
-    const query = `UPDATE reservas SET estado = 'Cancelada' WHERE id_usuario = ? AND id_horario = ? AND estado = 'Confirmada'`;
-    return await db.query(query, [idUsuario, idHorario]);
+    return await ReservasModel.cancelarReserva(idUsuario, idHorario);
   }
 };
 
