@@ -3,5 +3,7 @@ coverage/
 coverage-report/
 .env
 *.log
+*.png
+*.svg
 .DS_Store
 Thumbs.db

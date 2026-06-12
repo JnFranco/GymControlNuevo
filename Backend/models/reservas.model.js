@@ -122,11 +122,24 @@ async function tieneMembresiaActiva(idUsuario) {
   return rows.length > 0;
 }
 
+// ✅ VALIDACIÓN: Verificar que el usuario existe
+async function existeUsuario(idUsuario) {
+  const [rows] = await db.query("SELECT id FROM usuarios WHERE id = ? AND activo = 1", [idUsuario]);
+  return rows.length > 0;
+}
+
 // ✅ Crear una nueva reserva CON VALIDACIÓN Y TRANSACCIÓN
 async function crearReserva(idUsuario, idHorario) {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
+
+    // 0. Verificar que el usuario existe
+    const usuarioExiste = await existeUsuario(idUsuario);
+    if (!usuarioExiste) {
+      await connection.rollback();
+      throw new Error('Usuario no encontrado o inactivo');
+    }
 
     // 1. Verificar que el horario existe
     const cuposInfo = await obtenerCuposDisponibles.call(null, idHorario);
@@ -215,6 +228,7 @@ module.exports = {
   tieneCruceReserva,
   esHorarioPasado,
   tieneMembresiaActiva,
+  existeUsuario,
   crearReserva,
   actualizarReserva,
   eliminarReserva,

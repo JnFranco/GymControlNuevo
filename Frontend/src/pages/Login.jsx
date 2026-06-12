@@ -30,6 +30,7 @@ export default function Login() {
             // Verificacion de respuesta y rol
             if (res.data && res.data.rol) {
                 localStorage.setItem("usuario", JSON.stringify(res.data));
+                if (res.data.token) localStorage.setItem("token", res.data.token);
                 const rolRecibido = res.data.rol;
 
                 // Redireccion por rol

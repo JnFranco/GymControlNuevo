@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const adminController = require('../controllers/admin.controller');
 
 /* router.get('/admin/stats', adminController.getResumen);
@@ -14,6 +15,9 @@ const {
     reporteMembresias
 } = require("../controllers/admin.reportes.controller");
 
+
+router.use(authMiddleware);
+router.use(roleMiddleware('Administrador'));
 
 router.get('/stats', adminController.getResumen);
 router.get('/estadisticas', adminController.getEstadisticas);

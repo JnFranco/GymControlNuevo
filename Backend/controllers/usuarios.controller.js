@@ -1,6 +1,8 @@
 const UsuariosModel = require('../models/usuarios.model');
 const db = require('../db/connection');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'GymControl2024SecretKey';
 
 // ✅ Obtener todos
 exports.getUsuarios = async (req, res) => {
@@ -124,8 +126,14 @@ exports.login = async (req, res) => {
 
         if (!match) return res.status(401).json({ mensaje: "Contraseña incorrecta" });
 
+        const token = jwt.sign(
+          { id: usuario.id, correo: usuario.correo, rol: usuario.nombre_rol || usuario.rol },
+          JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+
         delete usuario.password;
-        res.json(usuario); 
+        res.json({ ...usuario, token });
     } catch (error) {
         res.status(500).json({ error: "Error interno del servidor" });
     }

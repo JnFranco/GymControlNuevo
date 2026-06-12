@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const { authMiddleware } = require('../middleware/auth');
 const reservasController = require('../controllers/reservas.controller');
+router.use(authMiddleware);
 
 router.get('/', reservasController.getReservas);
 router.get('/:id', reservasController.getReservaById);
