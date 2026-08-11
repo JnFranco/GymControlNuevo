@@ -29,9 +29,12 @@ import {
 } from "@mui/icons-material";
 
 import api from "../../services/api";
+import { useNotify } from "../../components/NotificationProvider";
+import { PageTitle } from "../../components/ui/Typography";
 import "./Asistencias.css";
 
 export default function Asistencias() {
+  const notify = useNotify();
   const [clases, setClases] = useState([]);
   const [horarios, setHorarios] = useState([]);
   const [reservas, setReservas] = useState([]);
@@ -155,7 +158,7 @@ export default function Asistencias() {
       
     } catch (error) {
       console.error("❌ Error al marcar asistencia:", error);
-      alert("Error al marcar la asistencia");
+      notify("Error al marcar la asistencia", "error");
     }
   };
 
@@ -167,11 +170,9 @@ export default function Asistencias() {
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <CheckCircleIcon sx={{ fontSize: 40, color: '#ffd700' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
-            Marcar Asistencias
-          </Typography>
+          <PageTitle sx={{ mb: 0 }}>Marcar Asistencias</PageTitle>
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Gestiona la asistencia de tus alumnos
         </Typography>
       </Box>

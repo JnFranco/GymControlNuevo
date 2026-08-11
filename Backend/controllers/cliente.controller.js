@@ -56,9 +56,6 @@ exports.cancelarReserva = async (req, res) => {
     if (affected === 0) return res.status(404).json({ message: "Reserva no encontrada" });
     res.json({ message: "Reserva cancelada" });
   } catch (error) {
-    if (error.message.includes('No se puede cancelar')) {
-      return res.status(400).json({ message: error.message });
-    }
     res.status(500).json({ message: "Error al cancelar" });
   }
 };
@@ -73,19 +70,32 @@ exports.getDashboardData_cli = async (req, res) => {
     console.log("2. [CONTROLLER]: Datos recibidos del modelo");
 
     const data = results[0];
-    let dias_restantes = 0;
 
-    if (data && data.ultima_fecha) {
+    let dias_restantes = 0;
+    let estado_pago = null;
+
+    if (data && data.ultima_fecha && data.duracion) {
       const vencimiento = new Date(data.ultima_fecha);
       vencimiento.setDate(vencimiento.getDate() + (data.duracion || 0));
       const hoy = new Date();
-      dias_restantes = Math.max(0, Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24)));
+      dias_restantes = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
+
+      // Estado real: solo un pago "Pagado" y vigente da membresía activa
+      if (data.estado_pago === "Pagado") {
+        estado_pago = dias_restantes >= 0 ? "Pagado" : "Atrasado";
+      } else {
+        estado_pago = data.estado_pago || "Pendiente";
+      }
     }
 
     res.json({
+      pago_id: data?.pago_id || null,
       nombre_membresia: data?.nombre_membresia || "Sin Membresía",
-      dias_restantes: dias_restantes,
+      estado_pago,
+      dias_restantes,
+      fecha_fin: data?.fecha_fin || null,
       total_asistencias: data?.total_asistencias || 0,
+      asistencias_mes: data?.asistencias_mes || 0,
       total_reservas: data?.total_reservas || 0
     });
 
@@ -126,10 +136,9 @@ exports.reservarClase_cli = async (req, res) => {
   }
 };
 
-// ✅ CANCELAR RESERVA (usa usuario del token, no del body)
+// ✅ CANCELAR RESERVA
 exports.cancelarReserva_cli = async (req, res) => {
-  const { idHorario } = req.body;
-  const idUsuario = req.usuario?.id;
+  const { idHorario, idUsuario } = req.body;
   try {
     if (!idHorario || !idUsuario) {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
@@ -142,10 +151,7 @@ exports.cancelarReserva_cli = async (req, res) => {
     res.json({ success: true, mensaje: "Reserva cancelada" });
   } catch (error) {
     console.error("❌ Error al cancelar:", error);
-    if (error.message.includes('No se puede cancelar')) {
-      return res.status(400).json({ error: error.message });
-    }
-    res.status(500).json({ error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 

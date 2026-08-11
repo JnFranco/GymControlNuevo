@@ -33,6 +33,7 @@ import {
 } from "@mui/icons-material";
 
 import api from "../../services/api";
+import { PageTitle } from "../../components/ui/Typography";
 import "./Alumnos.css";
 console.log("✅ Alumnos cargado correctamente");
 
@@ -146,9 +147,7 @@ export default function Alumnos() {
   if (error) {
     return (
       <Box>
-        <Typography variant="h4" sx={{ color: 'white', mb: 2 }}>
-          Mis Alumnos
-        </Typography>
+        <PageTitle>Mis Alumnos</PageTitle>
         <Box className="error-box">
           <Typography color="error" variant="h6" align="center">
             ⚠️ {error}
@@ -164,11 +163,9 @@ export default function Alumnos() {
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <GroupIcon sx={{ fontSize: 40, color: '#ffd700' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
-            Mis Alumnos
-          </Typography>
+          <PageTitle sx={{ mb: 0 }}>Mis Alumnos</PageTitle>
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Lista de alumnos que asisten a tus clases
         </Typography>
       </Box>

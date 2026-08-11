@@ -37,7 +37,7 @@ export const gymTheme = createTheme({
             },
             h4: {
             fontWeight: 700,
-            color: "#d7eec6ff"
+            color: "#ffffff"
             },
             h5: {
             fontWeight: 600,

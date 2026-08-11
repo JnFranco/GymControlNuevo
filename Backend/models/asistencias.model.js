@@ -24,14 +24,11 @@ async function obtenerAsistenciaPorId(id) {
   return rows[0];
 }
 
-// ✅ Registrar asistencia (con fecha opcional para registro extemporáneo)
-async function registrarAsistencia({ id_reserva, presente, fecha_asistencia }) {
-  const fecha = fecha_asistencia || 'CURRENT_DATE';
+// ✅ Registrar asistencia
+async function registrarAsistencia({ id_reserva, presente }) {
   const [result] = await db.query(
-    fecha_asistencia
-      ? 'INSERT INTO asistencias (id_reserva, presente, fecha_asistencia) VALUES (?, ?, ?)'
-      : 'INSERT INTO asistencias (id_reserva, presente, fecha_asistencia) VALUES (?, ?, CURRENT_DATE)',
-    fecha_asistencia ? [id_reserva, presente, fecha_asistencia] : [id_reserva, presente]
+    'INSERT INTO asistencias (id_reserva, presente, fecha_asistencia) VALUES (?, ?, CURRENT_DATE)',
+    [id_reserva, presente]
   );
   return result.insertId;
 }

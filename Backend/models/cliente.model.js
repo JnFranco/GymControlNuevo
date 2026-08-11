@@ -6,22 +6,28 @@ const ClienteModel = {
     console.log(`--[DB] Iniciando consulta para ID: ${id}--`);
     const query = `
       SELECT 
-        (SELECT m.nombre FROM pagos p 
-         JOIN membresias m ON p.id_membresia = m.id 
-         WHERE p.id_usuario = ? ORDER BY p.fecha_pago DESC LIMIT 1) as nombre_membresia,
-        (SELECT p.fecha_pago FROM pagos p 
-         WHERE p.id_usuario = ? ORDER BY p.fecha_pago DESC LIMIT 1) as ultima_fecha,
-        (SELECT m.duracion_dias FROM pagos p 
-         JOIN membresias m ON p.id_membresia = m.id 
-         WHERE p.id_usuario = ? ORDER BY p.fecha_pago DESC LIMIT 1) as duracion,
+        p.id AS pago_id,
+        p.estado AS estado_pago,
+        p.fecha_pago AS ultima_fecha,
+        m.nombre AS nombre_membresia,
+        m.duracion_dias AS duracion,
+        DATE_ADD(p.fecha_pago, INTERVAL m.duracion_dias DAY) AS fecha_fin,
         (SELECT COUNT(*) FROM asistencias a 
          JOIN reservas r ON a.id_reserva = r.id 
          WHERE r.id_usuario = ? AND a.presente = 1) as total_asistencias,
+        (SELECT COUNT(*) FROM asistencias a 
+         JOIN reservas r ON a.id_reserva = r.id 
+         WHERE r.id_usuario = ? AND a.presente = 1
+           AND MONTH(a.fecha_asistencia) = MONTH(CURDATE())
+           AND YEAR(a.fecha_asistencia) = YEAR(CURDATE())) as asistencias_mes,
         (SELECT COUNT(*) FROM reservas WHERE id_usuario = ? AND estado = 'Confirmada') as total_reservas
+      FROM pagos p
+      JOIN membresias m ON m.id = p.id_membresia
+      WHERE p.id = (SELECT MAX(p2.id) FROM pagos p2 WHERE p2.id_usuario = ?)
     `;
     
     // Con mysql2/promise se usa await y desestructuración [rows]
-    const [rows] = await db.query(query, [id, id, id, id, id]);
+    const [rows] = await db.query(query, [id, id, id, id]);
     console.log("✅ [DB Success]: Datos obtenidos");
     return rows;
   },

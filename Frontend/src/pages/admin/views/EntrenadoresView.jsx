@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from "../../../api/axios";
+import { useNotify } from "../../../components/NotificationProvider";
+import { PageTitle } from "../../../components/ui/Typography";
 import { 
   Box, Typography, Button, TextField, InputAdornment, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip,
@@ -8,6 +10,7 @@ import {
 import { Search, Add, Edit, Delete, FitnessCenter } from "@mui/icons-material";
 // Importamos el mismo componente de registro que usas en usuarios
 import RegisterUsuarios from "../../Register";
+import EditarUsuarioModal from "./EditarUsuarioModal";
 
 const glassStyle = {
   background: 'rgba(255, 255, 255, 0.05)',
@@ -19,7 +22,9 @@ const glassStyle = {
 };
 
 export default function EntrenadoresView() {
+  const notify = useNotify();
   const [showForm, setShowForm] = useState(false);
+  const [editando, setEditando] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,10 +53,21 @@ export default function EntrenadoresView() {
      u.especialidad?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleEliminar = async (entrenador) => {
+    if (!window.confirm(`¿Seguro que deseas eliminar a ${entrenador.nombre} ${entrenador.apellido}?`)) return;
+    try {
+      await api.delete(`/usuarios/${entrenador.id}`);
+      fetchEntrenadores();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      notify(error.response?.data?.mensaje || "No se pudo eliminar el entrenador", "error");
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" fontWeight={700}>Gestión de Entrenadores</Typography>
+        <PageTitle>Gestión de Entrenadores</PageTitle>
         {/* MISMO BOTÓN QUE EN USUARIOS */}
         <Button 
           variant="contained" 
@@ -127,8 +143,8 @@ export default function EntrenadoresView() {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <Button sx={{ color: '#FFD700' }}><Edit fontSize="small" /></Button>
-                    <Button sx={{ color: '#f5576c' }}><Delete fontSize="small" /></Button>
+                    <Button sx={{ color: '#FFD700' }} onClick={() => setEditando(row)}><Edit fontSize="small" /></Button>
+                    <Button sx={{ color: '#f5576c' }} onClick={() => handleEliminar(row)}><Delete fontSize="small" /></Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -142,6 +158,16 @@ export default function EntrenadoresView() {
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {/* MODAL DE EDICIÓN */}
+      {editando && (
+        <EditarUsuarioModal
+          usuario={editando}
+          mostrarRol={false}
+          onClose={() => setEditando(null)}
+          onSaved={fetchEntrenadores}
+        />
       )}
 
       {/* MISMO FORMULARIO MODAL QUE EN USUARIOS */}

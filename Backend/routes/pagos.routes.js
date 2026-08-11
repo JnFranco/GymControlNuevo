@@ -10,6 +10,7 @@ router.get('/test', (req, res) => {
 });
 
 // ✅ ADMIN PAGOS
+router.get('/admin', pagosController.getPagosAdmin);
 router.get('/pendientes', pagosController.getPagosPendientes);
 router.get('/atrasados', pagosController.getPagosAtrasadosAdmin);
 router.post('/cobrar/:id', pagosController.cobrarPago);

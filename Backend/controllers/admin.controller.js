@@ -13,12 +13,22 @@ exports.getResumen = async (req, res) => {
       'SELECT COUNT(*) as total FROM clases WHERE activo = 1'
     );
 
+    // 4. Reservas hechas hoy
+    const [reservas] = await db.execute(
+      "SELECT COUNT(*) as total FROM reservas WHERE estado = 'Confirmada' AND DATE(fecha_reserva) = CURDATE()"
+    );
+
+    // 5. Ingresos (pagos confirmados)
+    const [ingresos] = await db.execute(
+      "SELECT COALESCE(SUM(monto), 0) as total FROM pagos WHERE estado = 'Pagado'"
+    );
 
     res.json({
       clientes: clientes[0].total,
       entrenadores: entrenadores[0].total,
       clasesHoy: clases[0].total,
-      ingresos: 15240 // Aquí podrías sumar pagos si tienes la tabla
+      reservasHoy: reservas[0].total,
+      ingresos: Number(ingresos[0].total)
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

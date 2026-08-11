@@ -19,6 +19,7 @@ import {
   Lock
 } from "@mui/icons-material";
 import api from "../../services/api";
+import { PageTitle, SectionTitle } from "../../components/ui/Typography";
 import "./MiPerfil.css";
 
 export default function MiPerfil() {
@@ -224,9 +225,7 @@ export default function MiPerfil() {
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
         <Person sx={{ fontSize: 40, color: '#ffd700' }} />
-        <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
-          Mi Perfil
-        </Typography>
+        <PageTitle sx={{ mb: 0 }}>Mi Perfil</PageTitle>
       </Box>
 
       {mensaje.texto && (
@@ -246,9 +245,7 @@ export default function MiPerfil() {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                 <Person sx={{ color: '#ffd700' }} />
-                <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                  Datos Personales
-                </Typography>
+                <SectionTitle sx={{ mb: 0 }}>Datos Personales</SectionTitle>
               </Box>
 
               {!editando ? (
@@ -382,9 +379,7 @@ export default function MiPerfil() {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
                 <Lock sx={{ color: '#f44336' }} />
-                <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                  Seguridad
-                </Typography>
+                <SectionTitle sx={{ mb: 0 }}>Seguridad</SectionTitle>
               </Box>
 
               {!cambiandoPassword ? (

@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -5,41 +7,79 @@ import {
   Card,
   CardContent,
   Button,
-  Chip
+  Chip,
+  CircularProgress
 } from "@mui/material";
 
+import api from "../../services/api";
+import { SectionTitle } from "../../components/ui/Typography";
 import "./DashboardInstructor.css";
 
 export default function DashboardInstructor() {
-  
-  const estadisticas = {
-    clasesActivas: 5,
-    horariosAsignados: 12,
-    reservasDelDia: 28,
-    asistenciaPromedio: 85
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [estadisticas, setEstadisticas] = useState({
+    clasesActivas: 0,
+    horariosAsignados: 0,
+    reservasDelDia: 0,
+    asistenciaPromedio: 0
+  });
+  const [proximaClase, setProximaClase] = useState(null);
+  const [horariosDelDia, setHorariosDelDia] = useState([]);
+
+  const usuario = JSON.parse(localStorage.getItem("usuario") || "{}");
+
+  useEffect(() => {
+    cargarDatos();
+  }, []);
+
+  const cargarDatos = async () => {
+    if (!usuario.id) {
+      setError("No hay sesión activa");
+      setLoading(false);
+      return;
+    }
+    try {
+      const [statsRes, proxRes, horariosRes] = await Promise.all([
+        api.get(`/dashboard/instructor/${usuario.id}`),
+        api.get(`/dashboard/instructor/${usuario.id}/proxima-clase`),
+        api.get(`/horarios/instructor/${usuario.id}`)
+      ]);
+
+      setEstadisticas(statsRes.data);
+      setProximaClase(proxRes.data.proxima);
+
+      const hoy = new Date();
+      const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const diaHoy = diasSemana[hoy.getDay()];
+      setHorariosDelDia(horariosRes.data.filter((h) => h.dia_semana === diaHoy));
+      setError(null);
+    } catch (error) {
+      console.error("❌ Error al cargar dashboard:", error);
+      setError(error.response?.data?.error || "Error al cargar el dashboard");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const proximaClase = {
-    nombre: "CROSSFIT AVANZADO",
-    hora: "Hoy, 6:00 PM",
-    instructor: "Instructor, Laura G"
-  };
+  const actividadSemanal = ["L", "M", "M", "J", "V"];
 
-  const actividadSemanal = [
-    { dia: "Lun", activo: true },
-    { dia: "Mar", activo: true },
-    { dia: "Mié", activo: true },
-    { dia: "Jue", activo: false },
-    { dia: "Vie", activo: true }
-  ];
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress sx={{ color: '#fbc02d' }} />
+      </Box>
+    );
+  }
 
-  const horariosDelDia = [
-    { titulo: "YOGA FLOW", hora: "7:00 AM" },
-    { titulo: "CROSSFIT BÁSICO", hora: "8:00 AM" },
-    { titulo: "BOXEO FUNDAMENTOS", hora: "9:00 AM" }
-  ];
-
-  const diasSemana = ["L", "M", "M", "J", "V"];
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+        <Typography color="error" variant="h6">⚠️ {error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -63,29 +103,29 @@ export default function DashboardInstructor() {
 
       {/* CONTENIDO PRINCIPAL */}
       <Grid container spacing={3}>
-        
+
         {/* COLUMNA IZQUIERDA */}
         <Grid item xs={12} md={6}>
-          
+
           {/* PRÓXIMA CLASE */}
           <Card className="card" sx={{ mb: 3 }}>
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <SectionTitle mb={1}>
                 Próxima Clase
-              </Typography>
+              </SectionTitle>
               <Box className="next-class">
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {proximaClase.nombre}
+                    {proximaClase ? proximaClase.nombre : "Sin clases programadas"}
                   </Typography>
                   <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                    {proximaClase.hora}
+                    {proximaClase ? proximaClase.hora : "Aún no tienes clases futuras"}
                   </Typography>
                   <Typography variant="caption" sx={{ color: "rgba(255,255,255,0.5)" }}>
-                    {proximaClase.instructor}
+                    {proximaClase ? proximaClase.instructor : ""}
                   </Typography>
                 </Box>
-                <Button className="primary-btn">
+                <Button className="primary-btn" onClick={() => navigate("/entrenador/horarios")}>
                   Ver Lista
                 </Button>
               </Box>
@@ -95,39 +135,43 @@ export default function DashboardInstructor() {
           {/* ACTIVIDAD SEMANAL */}
           <Card className="card">
             <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <SectionTitle mb={1}>
                 Actividad Semanal
-              </Typography>
+              </SectionTitle>
               <Box className="weekly-activity">
-                {actividadSemanal.map((d, i) => (
-                  <Box
-                    key={i}
-                    className={`day-box ${d.activo ? "active" : ""}`}
-                  >
-                    {d.dia}
-                  </Box>
-                ))}
+                {["Lun", "Mar", "Mié", "Jue", "Vie"].map((dia, i) => {
+                  const hoy = new Date();
+                  const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                  const diaHoy = diasSemana[hoy.getDay()];
+                  const mapDias = { Lun: 'Lunes', Mar: 'Martes', Mié: 'Miércoles', Jue: 'Jueves', Vie: 'Viernes' };
+                  const activo = mapDias[dia] === diaHoy && horariosDelDia.length > 0;
+                  return (
+                    <Box key={i} className={`day-box ${activo ? "active" : ""}`}>
+                      {dia}
+                    </Box>
+                  );
+                })}
               </Box>
             </CardContent>
           </Card>
-          
+
         </Grid>
 
         {/* COLUMNA DERECHA */}
         <Grid item xs={12} md={6}>
-          
+
           {/* HORARIOS DEL DÍA */}
           <Card className="card">
             <CardContent>
               <Box className="schedule-header">
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <SectionTitle>
                   Horarios del Día
-                </Typography>
+                </SectionTitle>
                 <Box sx={{ display: "flex", gap: 1 }}>
-                  {diasSemana.map((d, i) => (
-                    <Chip 
-                      key={i} 
-                      label={d} 
+                  {actividadSemanal.map((d, i) => (
+                    <Chip
+                      key={i}
+                      label={d}
                       className="day-chip"
                       size="small"
                     />
@@ -135,19 +179,25 @@ export default function DashboardInstructor() {
                 </Box>
               </Box>
 
-              {horariosDelDia.map((h, i) => (
-                <Box key={i} className="schedule-item">
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {h.titulo}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
-                    {h.hora}
-                  </Typography>
-                </Box>
-              ))}
+              {horariosDelDia.length > 0 ? (
+                horariosDelDia.map((h, i) => (
+                  <Box key={i} className="schedule-item">
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {h.clase_nombre}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      {String(h.hora_inicio).slice(0, 5)} - {String(h.hora_fin).slice(0, 5)}
+                    </Typography>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.5)", py: 2 }}>
+                  No tienes horarios para hoy.
+                </Typography>
+              )}
             </CardContent>
           </Card>
-          
+
         </Grid>
 
       </Grid>

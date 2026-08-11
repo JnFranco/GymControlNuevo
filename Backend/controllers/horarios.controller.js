@@ -1,4 +1,5 @@
 const db = require('../db/connection'); // Ajusta según tu configuración
+const HorariosModel = require('../models/horarios.model');
 
 // ============================================
 // MÉTODOS EXISTENTES (mantén los que ya tienes)

@@ -1,4 +1,16 @@
 const db = require("../db/connection");
+const ConfigModel = require("../models/config.model");
+
+async function validarPagosHabilitados(res) {
+  const config = await ConfigModel.obtenerConfig();
+  if (!config.sistemaActivo) {
+    return res.status(503).json({ mensaje: "El sistema está en mantenimiento temporal" });
+  }
+  if (!config.pagosActivos) {
+    return res.status(503).json({ mensaje: "Los pagos están deshabilitados temporalmente" });
+  }
+  return null;
+}
 
 exports.getPagosPorUsuario = async (req, res) => {
   const { id } = req.params;
@@ -29,6 +41,9 @@ exports.getPagosPorUsuario = async (req, res) => {
 
 exports.pagarMembresia = async (req, res) => {
   try {
+    const bloqueado = await validarPagosHabilitados(res);
+    if (bloqueado) return bloqueado;
+
     const { id } = req.params;
     const { metodo_pago } = req.body;
 
@@ -96,6 +111,9 @@ exports.getPagosPendientes = async (req, res) => {
 
 exports.cobrarPago = async (req, res) => {
   try {
+    const bloqueado = await validarPagosHabilitados(res);
+    if (bloqueado) return bloqueado;
+
     const { id } = req.params;
 
     console.log("➡️ Intentando cobrar pago:", id);
@@ -185,9 +203,12 @@ exports.getPagosAtrasadosAdmin = async (req, res) => {
 };
 
 exports.crearPago = async (req, res) => {
-  const { id_usuario, id_membresia } = req.body;
+  const { id_usuario, id_membresia, estado } = req.body;
 
   try {
+    const bloqueado = await validarPagosHabilitados(res);
+    if (bloqueado) return bloqueado;
+
     const [[membresia]] = await db.execute(
       "SELECT costo FROM membresias WHERE id = ?",
       [id_membresia]
@@ -195,13 +216,42 @@ exports.crearPago = async (req, res) => {
 
     await db.execute(`
       INSERT INTO pagos (id_usuario, id_membresia, monto, estado)
-      VALUES (?, ?, ?, 'Pendiente')
-    `, [id_usuario, id_membresia, membresia.costo]);
+      VALUES (?, ?, ?, ?)
+    `, [id_usuario, id_membresia, membresia.costo, estado || "Pendiente"]);
 
     res.json({ message: "Pago creado" });
   } catch (error) {
     console.error("❌ Error crear pago:", error);
     res.status(500).json({ error: "No se pudo crear el pago" });
+  }
+};
+
+exports.getPagosAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        p.id,
+        p.id_usuario,
+        CONCAT(u.nombre, ' ', u.apellido) AS cliente,
+        u.correo,
+        p.id_membresia,
+        m.nombre AS membresia,
+        p.monto,
+        p.metodo_pago,
+        p.estado,
+        p.fecha_pago,
+        DATE_ADD(p.fecha_pago, INTERVAL m.duracion_dias DAY) AS fecha_fin,
+        DATEDIFF(DATE_ADD(p.fecha_pago, INTERVAL m.duracion_dias DAY), CURDATE()) AS dias_restantes
+      FROM pagos p
+      JOIN usuarios u ON u.id = p.id_usuario
+      JOIN membresias m ON m.id = p.id_membresia
+      ORDER BY p.id DESC
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("❌ Error al obtener pagos admin:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 

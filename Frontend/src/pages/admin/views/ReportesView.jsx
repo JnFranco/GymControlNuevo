@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 
 import api from "../../../api/axios";
+import { PageTitle, SectionTitle } from "../../../components/ui/Typography";
 
 // ===============================
 // ESTILO GLASS
@@ -140,14 +141,12 @@ export default function ReportesView() {
 
     return (
         <Box>
-        <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
-            Reportes
-        </Typography>
+        <PageTitle>Reportes</PageTitle>
 
         <Paper sx={{ ...glassStyle, mb: 4 }}>
-            <Typography variant="h6" fontWeight={700} mb={2}>
+            <SectionTitle mb={1}>
             Generar Reporte
-            </Typography>
+            </SectionTitle>
 
             <Box display="flex" gap={2} flexWrap="wrap" mb={3}>
             <FormControl sx={{ minWidth: 250 }}>

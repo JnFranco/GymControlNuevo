@@ -1,8 +1,12 @@
-
-
 const db = require("../db/connection");
 
+function manejarError(res, error, contexto) {
+  console.error(`❌ Error en ${contexto}:`, error);
+  res.status(500).json({ error: 'Error interno del servidor' });
+}
+
 exports.reporteUsuarios = async (req, res) => {
+  try {
     const [rows] = await db.query(`
         SELECT 
         CONCAT(nombre, ' ', apellido) AS usuario,
@@ -16,9 +20,13 @@ exports.reporteUsuarios = async (req, res) => {
         FROM usuarios
     `);
     res.json(rows);
+  } catch (error) {
+    manejarError(res, error, 'reporteUsuarios');
+  }
 };
 
 exports.reporteEntrenadores = async (req, res) => {
+  try {
     const [rows] = await db.query(`
         SELECT 
         CONCAT(u.nombre, ' ', u.apellido) AS entrenador,
@@ -30,9 +38,13 @@ exports.reporteEntrenadores = async (req, res) => {
         GROUP BY u.id
     `);
     res.json(rows);
+  } catch (error) {
+    manejarError(res, error, 'reporteEntrenadores');
+  }
 };
 
 exports.reporteClases = async (req, res) => {
+  try {
     const [rows] = await db.query(`
         SELECT 
         c.nombre AS clase,
@@ -43,9 +55,13 @@ exports.reporteClases = async (req, res) => {
         LEFT JOIN usuarios u ON c.id_entrenador = u.id
     `);
     res.json(rows);
+  } catch (error) {
+    manejarError(res, error, 'reporteClases');
+  }
 };
 
 exports.reporteMembresias = async (req, res) => {
+  try {
     const [rows] = await db.query(`
         SELECT 
         CONCAT(u.nombre, ' ', u.apellido) AS usuario,
@@ -57,4 +73,7 @@ exports.reporteMembresias = async (req, res) => {
         INNER JOIN membresias m ON m.id = p.id_membresia
     `);
     res.json(rows);
+  } catch (error) {
+    manejarError(res, error, 'reporteMembresias');
+  }
 };

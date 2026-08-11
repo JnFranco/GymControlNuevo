@@ -9,8 +9,13 @@ import {
     Switch,
     FormControlLabel,
     Button,
-    Divider
+    Divider,
+    Alert,
+    CircularProgress
 } from "@mui/material";
+
+import api from "../../../api/axios";
+import { PageTitle, SectionTitle } from "../../../components/ui/Typography";
 
 // ===============================
 // ESTILO GLASS
@@ -47,15 +52,26 @@ const DEFAULT_CONFIG = {
     export default function ConfiguracionView() {
     const [tab, setTab] = useState(0);
     const [config, setConfig] = useState(DEFAULT_CONFIG);
+    const [loading, setLoading] = useState(true);
+    const [guardando, setGuardando] = useState(false);
+    const [mensaje, setMensaje] = useState("");
 
     // ===============================
-    // CARGAR CONFIG GUARDADA
+    // CARGAR CONFIG DESDE EL BACKEND
     // ===============================
     useEffect(() => {
-        const guardada = localStorage.getItem("configSistema");
-        if (guardada) {
-        setConfig(JSON.parse(guardada));
+        const cargar = async () => {
+        try {
+            const res = await api.get("/config");
+            setConfig({ ...DEFAULT_CONFIG, ...res.data });
+        } catch (error) {
+            console.error("Error al cargar config:", error);
+            setMensaje("No se pudo cargar la configuración del servidor");
+        } finally {
+            setLoading(false);
         }
+        };
+        cargar();
     }, []);
 
     // ===============================
@@ -66,18 +82,38 @@ const DEFAULT_CONFIG = {
     };
 
     // ===============================
-    // GUARDAR CONFIG (REAL)
+    // GUARDAR CONFIG (BACKEND)
     // ===============================
-    const guardarConfig = () => {
-        localStorage.setItem("configSistema", JSON.stringify(config));
-        alert("Configuración guardada correctamente");
+    const guardarConfig = async () => {
+        setGuardando(true);
+        setMensaje("");
+        try {
+        await api.put("/config", config);
+        setMensaje("Configuración guardada correctamente");
+        } catch (error) {
+        console.error("Error al guardar config:", error);
+        setMensaje("Ocurrió un error al guardar la configuración");
+        } finally {
+        setGuardando(false);
+        }
     };
+
+    if (loading) {
+        return (
+        <Box>
+            <PageTitle>
+            Configuración del Sistema
+            </PageTitle>
+            <CircularProgress />
+        </Box>
+        );
+    }
 
     return (
         <Box>
-        <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
+        <PageTitle>
             Configuración del Sistema
-        </Typography>
+        </PageTitle>
 
         <Paper sx={glassStyle}>
             <Tabs
@@ -99,9 +135,9 @@ const DEFAULT_CONFIG = {
             =============================== */}
             {tab === 0 && (
             <Box>
-                <Typography fontWeight={700} mb={2}>
+                <SectionTitle>
                 Información del Gimnasio
-                </Typography>
+                </SectionTitle>
 
                 <TextField
                 label="Nombre del gimnasio"
@@ -142,9 +178,9 @@ const DEFAULT_CONFIG = {
             =============================== */}
             {tab === 1 && (
             <Box>
-                <Typography fontWeight={700} mb={2}>
+                <SectionTitle>
                 Parámetros del Sistema
-                </Typography>
+                </SectionTitle>
 
                 <TextField
                 type="number"
@@ -180,9 +216,9 @@ const DEFAULT_CONFIG = {
             =============================== */}
             {tab === 2 && (
             <Box>
-                <Typography fontWeight={700} mb={2}>
+                <SectionTitle>
                 Estados del Sistema
-                </Typography>
+                </SectionTitle>
 
                 <FormControlLabel
                 control={
@@ -221,9 +257,9 @@ const DEFAULT_CONFIG = {
             =============================== */}
             {tab === 3 && (
             <Box>
-                <Typography fontWeight={700} mb={2}>
+                <SectionTitle>
                 Configuración de Reportes
-                </Typography>
+                </SectionTitle>
 
                 <FormControlLabel
                 control={
@@ -252,9 +288,9 @@ const DEFAULT_CONFIG = {
             =============================== */}
             {tab === 4 && (
             <Box>
-                <Typography fontWeight={700} mb={2}>
+                <SectionTitle>
                 Seguridad
-                </Typography>
+                </SectionTitle>
 
                 <FormControlLabel
                 control={
@@ -279,8 +315,14 @@ const DEFAULT_CONFIG = {
 
             <Divider sx={{ my: 3 }} />
 
-            <Button variant="contained" onClick={guardarConfig}>
-            Guardar Configuración
+            {mensaje && (
+            <Alert severity={mensaje.includes("No se pudo") || mensaje.includes("error") ? "error" : "success"} sx={{ mb: 2 }}>
+                {mensaje}
+            </Alert>
+            )}
+
+            <Button variant="contained" disabled={guardando} onClick={guardarConfig}>
+            {guardando ? "Guardando..." : "Guardar Configuración"}
             </Button>
         </Paper>
         </Box>

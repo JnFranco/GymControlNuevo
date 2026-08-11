@@ -1,41 +1,99 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, Typography, Grid, Card, CardContent, TextField, 
-  Button, Avatar, Divider, MenuItem, InputAdornment, Chip 
+  Button, Avatar, Divider, MenuItem, InputAdornment, Chip, Alert 
 } from "@mui/material";
 import { 
-  Save, Person, Email, Phone, Scale, Height, Flag, Edit 
+  Save, Person, Scale 
 } from "@mui/icons-material";
+import api from "../../../services/api";
+import { PageTitle, SectionTitle } from "../../../components/ui/Typography";
 
-export default function PerfilView({ usuario }) {
+export default function PerfilView() {
+  const usuarioLS = JSON.parse(localStorage.getItem("usuario") || "{}");
+
   // Estado local que maneja todos los datos editables del cliente
   const [formData, setFormData] = useState({
-    nombre: usuario?.nombre || "Juan",
-    apellido: usuario?.apellido || "Pérez",
-    correo: usuario?.correo || "juan.perez@email.com",
-    telefono: usuario?.telefono || "987654321",
-    peso: "78.5",      // Este dato alimentará la vista de Progreso
-    altura: "1.75",    // Este dato alimentará la vista de Progreso
-    objetivo: "Perder Grasa",
-    genero: "Masculino"
+    nombre: usuarioLS?.nombre || "",
+    apellido: usuarioLS?.apellido || "",
+    correo: usuarioLS?.correo || "",
+    telefono: usuarioLS?.telefono || "",
+    peso: usuarioLS?.peso || "",
+    altura: usuarioLS?.altura || "",
+    objetivo: usuarioLS?.objetivo || "",
+    genero: usuarioLS?.genero || ""
   });
+
+  const [loading, setLoading] = useState(false);
+  const [mensaje, setMensaje] = useState({ tipo: '', texto: '' });
+
+  useEffect(() => {
+    if (!usuarioLS.id) return;
+    api.get(`/usuarios/${usuarioLS.id}`)
+      .then((res) => {
+        const u = res.data;
+        setFormData({
+          nombre: u.nombre || "",
+          apellido: u.apellido || "",
+          correo: u.correo || "",
+          telefono: u.telefono || "",
+          peso: u.peso ?? "",
+          altura: u.altura ?? "",
+          objetivo: u.objetivo || "",
+          genero: u.genero || ""
+        });
+      })
+      .catch((err) => console.error("❌ Error cargando perfil:", err));
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleGuardar = () => {
-    console.log("Enviando a la BD:", formData);
-    alert("¡Datos actualizados correctamente!");
-    // Aquí irá la conexión fetch/axios a tu base de datos después
+  const handleGuardar = async () => {
+    if (!usuarioLS.id) return;
+    try {
+      setLoading(true);
+      setMensaje({ tipo: '', texto: '' });
+
+      await api.put(`/usuarios/${usuarioLS.id}`, {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        peso: formData.peso,
+        altura: formData.altura,
+        objetivo: formData.objetivo,
+        genero: formData.genero
+      });
+
+      // Actualizar localStorage para que Progreso e Inicio reflejen los cambios
+      localStorage.setItem("usuario", JSON.stringify({
+        ...usuarioLS,
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        telefono: formData.telefono,
+        peso: formData.peso,
+        altura: formData.altura,
+        objetivo: formData.objetivo,
+        genero: formData.genero
+      }));
+
+      setMensaje({ tipo: 'success', texto: 'Datos actualizados correctamente' });
+      setTimeout(() => setMensaje({ tipo: '', texto: '' }), 3000);
+    } catch (error) {
+      console.error("❌ Error al guardar perfil:", error);
+      setMensaje({ tipo: 'error', texto: error.response?.data?.mensaje || 'Error al guardar los datos' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Box sx={{ maxWidth: '1000px', margin: '0 auto', pb: 5 }}>
       <Box mb={4} display="flex" justifyContent="space-between" alignItems="center">
         <Box>
-          <Typography variant="h4" fontWeight={800} sx={{ color: 'white' }}>Mi Perfil</Typography>
-          <Typography color="gray">Mantén tus datos actualizados para un mejor seguimiento.</Typography>
+          <PageTitle sx={{ mb: 0.5 }}>Mi Perfil</PageTitle>
+          <Typography variant="body2" color="text.secondary">Mantén tus datos actualizados para un mejor seguimiento.</Typography>
         </Box>
         <Chip 
           label="Cuenta Activa" 
@@ -44,6 +102,12 @@ export default function PerfilView({ usuario }) {
           sx={{ fontWeight: 'bold', borderColor: '#43e97b', color: '#43e97b' }} 
         />
       </Box>
+
+      {mensaje.texto && (
+        <Alert severity={mensaje.tipo} sx={{ mb: 3 }}>
+          {mensaje.texto}
+        </Alert>
+      )}
 
       <Grid container spacing={4}>
         {/* LADO IZQUIERDO: FOTO Y OBJETIVO RAPIDO */}
@@ -58,12 +122,12 @@ export default function PerfilView({ usuario }) {
               {formData.nombre[0]}
             </Avatar>
             <Typography variant="h5" fontWeight={800}>{formData.nombre} {formData.apellido}</Typography>
-            <Typography variant="body2" color="gray" mb={3}>{formData.correo}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>{formData.correo}</Typography>
             
             <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.1)' }} />
             
             <Box textAlign="left">
-              <Typography variant="caption" color="gray" sx={{ textTransform: 'uppercase', fontWeight: 700 }}>Objetivo Actual</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', fontWeight: 700 }}>Objetivo Actual</Typography>
               <Typography variant="body1" sx={{ color: '#fbc02d', fontWeight: 600 }}>{formData.objetivo}</Typography>
             </Box>
           </Card>
@@ -74,9 +138,9 @@ export default function PerfilView({ usuario }) {
           <Card sx={{ bgcolor: 'rgba(255,255,255,0.02)', borderRadius: 5, border: '1px solid rgba(255,255,255,0.08)' }}>
             <CardContent sx={{ p: 4 }}>
               
-              <Typography variant="h6" fontWeight={700} mb={3} display="flex" alignItems="center" gap={1}>
+              <SectionTitle mb={1} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Person sx={{ color: '#fbc02d' }} /> Datos Personales
-              </Typography>
+              </SectionTitle>
               
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
@@ -128,6 +192,12 @@ export default function PerfilView({ usuario }) {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <TextField 
+                    fullWidth label="Género" name="genero" value={formData.genero} onChange={handleChange}
+                    variant="filled" sx={{ bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1, input: { color: 'white' } }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField 
                     select fullWidth label="Objetivo" name="objetivo" value={formData.objetivo} onChange={handleChange}
                     variant="filled" sx={{ bgcolor: 'rgba(255,255,255,0.05)', borderRadius: 1, '& .MuiSelect-select': { color: 'white' } }}
                   >
@@ -142,12 +212,13 @@ export default function PerfilView({ usuario }) {
                 <Button 
                   fullWidth size="large" variant="contained" startIcon={<Save />}
                   onClick={handleGuardar}
+                  disabled={loading}
                   sx={{ 
                     bgcolor: '#fbc02d', color: 'black', fontWeight: 800, py: 1.5, borderRadius: 3,
                     '&:hover': { bgcolor: '#f9a825' }
                   }}
                 >
-                  Guardar Cambios
+                  {loading ? "Guardando..." : "Guardar Cambios"}
                 </Button>
               </Box>
 

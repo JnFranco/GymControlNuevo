@@ -27,13 +27,10 @@ exports.getAsistenciaById = async (req, res) => {
 
 exports.createAsistencia = async (req, res) => {
   try {
-    const { id_reserva, presente, fecha_asistencia } = req.body;
+    const { id_reserva, presente } = req.body;
     if (!id_reserva) return res.status(400).json({ mensaje: 'Falta el campo id_reserva' });
 
-    const payload = fecha_asistencia
-      ? { id_reserva, presente, fecha_asistencia }
-      : { id_reserva, presente };
-    const id = await AsistenciasModel.registrarAsistencia(payload);
+    const id = await AsistenciasModel.registrarAsistencia({ id_reserva, presente });
     res.status(201).json({ id, mensaje: 'Asistencia registrada correctamente' });
   } catch (error) {
     console.error('❌ Error al registrar asistencia:', error);
@@ -176,56 +173,116 @@ exports.getReservasByHorario = async (req, res) => {
   }
 };
 
-// POST - Marcar/desmarcar asistencia (con transaccion para evitar race condition)
+// POST - Marcar/desmarcar asistencia
 exports.marcarAsistencia = async (req, res) => {
-  const connection = await db.getConnection();
   try {
     const { id_reserva, presente } = req.body;
     
     if (!id_reserva) {
-      connection.release();
       return res.status(400).json({ error: 'Falta el campo id_reserva' });
     }
     
-    await connection.beginTransaction();
+    console.log('✅ Marcando asistencia:', { id_reserva, presente });
     
-    // Verificar si ya existe un registro de asistencia para hoy (con lock)
-    const [existente] = await connection.query(
+    // Verificar si ya existe un registro de asistencia para hoy
+    const [existente] = await db.query(
       `SELECT id FROM asistencias 
-       WHERE id_reserva = ? AND DATE(fecha_asistencia) = CURDATE() 
-       FOR UPDATE`,
+       WHERE id_reserva = ? AND DATE(fecha_asistencia) = CURDATE()`,
       [id_reserva]
     );
     
     if (existente.length > 0) {
-      await connection.query(
-        `UPDATE asistencias SET presente = ? WHERE id = ?`,
+      // Actualizar registro existente
+      await db.query(
+        `UPDATE asistencias 
+         SET presente = ? 
+         WHERE id = ?`,
         [presente ? 1 : 0, existente[0].id]
       );
+      
+      console.log('✅ Asistencia actualizada');
     } else {
-      await connection.query(
+      // Crear nuevo registro
+      await db.query(
         `INSERT INTO asistencias (id_reserva, presente, fecha_asistencia) 
          VALUES (?, ?, CURDATE())`,
         [id_reserva, presente ? 1 : 0]
       );
+      
+      console.log('✅ Asistencia creada');
     }
     
-    await connection.commit();
     res.json({ 
       success: true,
       message: presente ? 'Asistencia marcada' : 'Asistencia desmarcada'
     });
     
   } catch (error) {
-    await connection.rollback();
     console.error('❌ Error al marcar asistencia:', error);
     res.status(500).json({ 
       error: 'Error al marcar la asistencia',
       details: error.message 
     });
-  } finally {
-    connection.release();
   }
 };
 
+// const AsistenciasModel = require('../models/asistencias.model');
 
+// // ✅ Obtener todas las asistencias
+// exports.getAsistencias = async (req, res) => {
+//   try {
+//     const asistencias = await AsistenciasModel.obtenerAsistencias();
+//     res.json(asistencias);
+//   } catch (error) {
+//     console.error('❌ Error al obtener asistencias:', error);
+//     res.status(500).json({ mensaje: 'Error al obtener asistencias', error });
+//   }
+// };
+
+// // ✅ Obtener asistencia por ID
+// exports.getAsistenciaById = async (req, res) => {
+//   try {
+//     const asistencia = await AsistenciasModel.obtenerAsistenciaPorId(req.params.id);
+//     if (!asistencia) return res.status(404).json({ mensaje: 'Asistencia no encontrada' });
+//     res.json(asistencia);
+//   } catch (error) {
+//     res.status(500).json({ mensaje: 'Error al obtener asistencia', error });
+//   }
+// };
+
+// // ✅ Registrar nueva asistencia
+// exports.createAsistencia = async (req, res) => {
+//   try {
+//     const { id_reserva, presente } = req.body;
+//     if (!id_reserva) return res.status(400).json({ mensaje: 'Falta el campo id_reserva' });
+
+//     const id = await AsistenciasModel.registrarAsistencia({ id_reserva, presente });
+//     res.status(201).json({ id, mensaje: 'Asistencia registrada correctamente' });
+//   } catch (error) {
+//     console.error('❌ Error al registrar asistencia:', error);
+//     res.status(500).json({ mensaje: 'Error al registrar asistencia', error });
+//   }
+// };
+
+// // ✅ Actualizar asistencia (presente o no)
+// exports.updateAsistencia = async (req, res) => {
+//   try {
+//     const { presente } = req.body;
+//     const updated = await AsistenciasModel.actualizarAsistencia(req.params.id, { presente });
+//     if (updated === 0) return res.status(404).json({ mensaje: 'Asistencia no encontrada' });
+//     res.json({ mensaje: 'Asistencia actualizada correctamente' });
+//   } catch (error) {
+//     res.status(500).json({ mensaje: 'Error al actualizar asistencia', error });
+//   }
+// };
+
+// // ✅ Eliminar asistencia
+// exports.deleteAsistencia = async (req, res) => {
+//   try {
+//     const deleted = await AsistenciasModel.eliminarAsistencia(req.params.id);
+//     if (deleted === 0) return res.status(404).json({ mensaje: 'Asistencia no encontrada' });
+//     res.json({ mensaje: 'Asistencia eliminada correctamente' });
+//   } catch (error) {
+//     res.status(500).json({ mensaje: 'Error al eliminar asistencia', error });
+//   }
+// };

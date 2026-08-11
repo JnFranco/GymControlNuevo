@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 
 import api from "../../services/api";
+import { PageTitle, SectionTitle } from "../../components/ui/Typography";
 import "./Horarios.css";
 
 export default function Horarios() {
@@ -154,10 +155,10 @@ export default function Horarios() {
     return (
       <Box>
         <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 1 }}>
+          <PageTitle sx={{ mb: 1 }}>
             Mis Horarios
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
+          </PageTitle>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Gestiona tus horarios asignados
           </Typography>
         </Box>
@@ -176,11 +177,9 @@ export default function Horarios() {
       <Box sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
           <ScheduleIcon sx={{ fontSize: 40, color: '#ffd700' }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
-            Mis Horarios
-          </Typography>
+          <PageTitle sx={{ mb: 0 }}>Mis Horarios</PageTitle>
         </Box>
-        <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           Horarios asociados a tus clases
         </Typography>
       </Box>

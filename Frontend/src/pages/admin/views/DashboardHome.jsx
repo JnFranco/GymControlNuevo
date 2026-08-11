@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Box, Typography, Grid, Paper, Button } from "@mui/material";
 
 import GymStatsChart from "../components/GymStatsChart.jsx";
+import { PageTitle, SectionTitle, StatValue, Muted } from "../../../components/ui/Typography";
 
 
 
@@ -100,9 +101,7 @@ const totalAtrasado = pagosAtrasados.reduce(
 
     <Box>
 
-      <Typography variant="h4" fontWeight={700} sx={{ mb: 4 }}>
-        Dashboard de Administración
-      </Typography>
+      <PageTitle>Dashboard de Administración</PageTitle>
 
       {/* TARJETAS */}
       <Grid container spacing={3} sx={{ mb: 5 }}>
@@ -114,27 +113,25 @@ const totalAtrasado = pagosAtrasados.reduce(
         ].map((item, i) => (
           <Grid item xs={12} sm={6} md={3} key={i}>
             <Paper sx={glassStyle}>
-              <Typography variant="body2" sx={{ opacity: 0.7 }}>
+              <Muted mb={0.5}>
                 {item.label}
-              </Typography>
-              <Typography variant="h3" fontWeight={800} sx={{ color: '#FFD700' }}>
+              </Muted>
+              <StatValue fontSize={{ fontSize: { xs: "2rem", md: "2.5rem" } }}>
                 {item.val ?? 0}
-              </Typography>
+              </StatValue>
             </Paper>
           </Grid>
         ))}
       </Grid>
 
         <Box sx={{ mb: 3 }}>
-          <Typography fontWeight={700}>
-            💰 Total pendiente: 
+          <Typography fontWeight={700}>💰 Total pendiente: 
             <span style={{ color: "#FFD700" }}>
               {" "}S/. {totalPendiente}
             </span>
           </Typography>
 
-          <Typography fontWeight={700}>
-            🔥 Total atrasado: 
+          <Typography fontWeight={700}>🔥 Total atrasado: 
             <span style={{ color: "#ff6b6b" }}>
               {" "}S/. {totalAtrasado}
             </span>
@@ -147,9 +144,9 @@ const totalAtrasado = pagosAtrasados.reduce(
       <Box sx={{ mb: 6 }}>
         <Paper sx={glassStyle}>
 
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+          <SectionTitle mb={1}>
             Pagos Pendientes
-          </Typography>
+          </SectionTitle>
 
           {pagosPendientes.map(pago => (
             <Box key={pago.id} sx={{
@@ -190,9 +187,9 @@ const totalAtrasado = pagosAtrasados.reduce(
             </Box>
           ))}
 
-          <Typography variant="h6" fontWeight={700} sx={{ mt: 4, mb: 2 }}>
+          <SectionTitle sx={{ mt: 4, mb: 1 }}>
             Pagos Atrasados
-          </Typography>
+          </SectionTitle>
 
           {pagosAtrasados.map(pago => (
             <Box key={pago.id} sx={{
@@ -237,9 +234,9 @@ const totalAtrasado = pagosAtrasados.reduce(
       {/* ===== GRÁFICO ABAJO ===== */}
       <Box>
         <Paper sx={glassStyle}>
-          <Typography variant="h6" fontWeight={700} sx={{ mb: 3 }}>
+          <SectionTitle mb={1}>
             Estado del Gimnasio
-          </Typography>
+          </SectionTitle>
 
           <GymStatsChart data={chartData} />
             <Typography

@@ -10,9 +10,12 @@ import {
     Divider
 } from "@mui/material";
 import api from "../../../api/axios";
+import { useNotify } from "../../../components/NotificationProvider";
+import { PageTitle } from "../../../components/ui/Typography";
 import PagoCard from "../components/PagoCard";
 
 export default function PagosView() {
+    const notify = useNotify();
     const [pagos, setPagos] = useState([]);
     const [membresias, setMembresias] = useState([]);
     const [error, setError] = useState("");
@@ -61,14 +64,9 @@ export default function PagosView() {
         cargarPagos(); // refresca
         } catch (err) {
         console.error(err);
-        alert("No se pudo crear el pago");
+        notify(err.response?.data?.mensaje || "No se pudo crear el pago", "error");
         }
     };
-
-    useEffect(() => {
-        cargarPagos();
-        cargarMembresias();
-    }, []);
 
     const onPagoRealizado = () => {
         cargarPagos();
@@ -76,9 +74,9 @@ export default function PagosView() {
 
 return (
     <Box>
-        <Typography variant="h4" fontWeight={700} mb={3}>
+        <PageTitle>
         Mis Pagos
-        </Typography>
+        </PageTitle>
 
         {error && <Alert severity="error">{error}</Alert>}
 

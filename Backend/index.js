@@ -35,8 +35,16 @@ const misClasesRoutes = require('./routes/mis-clases.routes');
 const misReservasRoutes = require('./routes/mis-reservas.routes');
 const miMembresiaRoutes = require('./routes/mi-membresia.routes');
 
+// ⚙️ CONFIGURACIÓN DEL SISTEMA
+const configRoutes = require('./routes/config.routes');
+app.use('/api/config', configRoutes);
+
 const reportesRoutes = require("./routes/reportes.routes");
 app.use("/api/reportes", reportesRoutes);
+
+// 👤 DASHBOARD INSTRUCTOR
+const dashboardRoutes = require('./routes/dashboard.routes');
+app.use('/api', dashboardRoutes);
 
 // 1. Importar las rutas
 const clienteRoutes = require('./routes/cliente.routes'); 

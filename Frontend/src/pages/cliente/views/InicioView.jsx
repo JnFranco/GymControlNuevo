@@ -47,14 +47,15 @@ export default function InicioView() {
         const d = Array.isArray(response.data) ? response.data[0] : response.data;
 
         if (d) {
-          const dias = d.duracion || 0; // O la lógica que prefieras para días restantes
-          const activo = dias > 0;
+          const dias = Number(d.dias_restantes) || 0;
+          // Si no hay pago registrado (pago_id null) → sin membresía
+          const estado = d.pago_id ? d.estado_pago : null;
 
           setDatos({
             membresia: d.nombre_membresia || "Sin Membresía",
             dias_restantes: dias,
-            progreso_dias: activo ? Math.min(100, Math.round((dias / 30) * 100)) : 0,
-            estado_pago: activo ? "Pagado" : "Pendiente", // Lógica dinámica corregida
+            estado_pago: estado || (dias > 0 ? "Pagado" : null),
+            progreso_dias: estado === "Pagado" ? Math.min(100, Math.round((dias / 30) * 100)) : 0,
             total_asistencias: d.total_asistencias || 0,
             reservas_activas: d.total_reservas || 0,
             entrenador: "Por asignar"
@@ -84,7 +85,7 @@ export default function InicioView() {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
         <CircularProgress sx={{ color: '#fbc02d' }} />
-        <Typography color="gray" ml={2}>Cargando...</Typography>
+        <Typography color="text.secondary" ml={2}>Cargando...</Typography>
       </Box>
     );
   }
@@ -100,7 +101,23 @@ export default function InicioView() {
     entrenador: "Por asignar"
   };
 
-  const tieneMembresia = datosMostrar.dias_restantes > 0;
+  const tieneMembresia = datosMostrar.estado_pago === "Pagado" && datosMostrar.dias_restantes > 0;
+  const esPendiente = datosMostrar.estado_pago === "Pendiente";
+  const esAtrasado = datosMostrar.estado_pago === "Atrasado";
+
+  const chipStyle = {
+    fontSize: '1.1rem',
+    fontWeight: 800,
+    px: 3,
+    py: 2,
+    borderRadius: 3,
+  };
+  const chipEstado = () => {
+    if (tieneMembresia) return { ...chipStyle, bgcolor: '#43e97b', color: 'black', label: 'ACTIVA' };
+    if (esPendiente) return { ...chipStyle, bgcolor: '#ffb300', color: 'black', label: 'PENDIENTE' };
+    if (esAtrasado) return { ...chipStyle, bgcolor: '#f5576c', color: 'white', label: 'ATRASADO' };
+    return { ...chipStyle, bgcolor: 'rgba(255,255,255,0.2)', color: 'white', label: 'SIN MEMBRESÍA' };
+  };
 
   return (
     <Box sx={{ maxWidth: '1400px', margin: '0 auto', p: { xs: 1, md: 2 } }}>
@@ -110,7 +127,7 @@ export default function InicioView() {
         <Typography variant="h3" fontWeight={800} sx={{ color: 'white' }}>
           ¡Bienvenido, {nombreCompleto}! 👋
         </Typography>
-        <Typography variant="h6" color="gray" fontWeight={400}>
+        <Typography variant="body2" color="text.secondary" fontWeight={400}>
           Resumen de tu cuenta y actividad.
         </Typography>
       </Box>
@@ -157,28 +174,33 @@ export default function InicioView() {
                     }} 
                   />
                 </Box>
+              ) : esPendiente ? (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="body1" sx={{ color: '#ffb300', fontWeight: 600 }}>
+                    ⏳ Pago recibido. Esperando la validación del administrador para activar tu membresía.
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1, color: 'rgba(255,255,255,0.6)' }}>
+                    Cuando el administrador confirme el pago, tu membresía se activará automáticamente.
+                  </Typography>
+                </Box>
+              ) : esAtrasado ? (
+                <Typography variant="body1" sx={{ mt: 2, color: '#f5576c', fontWeight: 600 }}>
+                  ⚠️ Tu membresía está vencida. Renueva tu pago para seguir entrenando.
+                </Typography>
               ) : (
                 <Typography variant="body1" sx={{ mt: 2, color: 'rgba(255,255,255,0.6)' }}>
-                  No tienes una membresía activa en este momento.
+                  No tienes una membresía activa en este momento. Ve a la sección Pagos para elegir un plan.
                 </Typography>
               )}
             </Grid>
             
             <Grid size={{ xs: 12, md: 4 }} sx={{ textAlign: 'center' }}>
               <Chip 
-                label={datosMostrar.estado_pago.toUpperCase()} 
-                sx={{ 
-                  fontSize: '1.1rem', 
-                  fontWeight: 800, 
-                  px: 3, 
-                  py: 2, 
-                  borderRadius: 3,
-                  bgcolor: datosMostrar.estado_pago === 'Pagado' ? '#43e97b' : '#ff5252', 
-                  color: 'black'
-                }} 
+                label={chipEstado().label}
+                sx={{ ...chipEstado() }}
               />
-              <Typography variant="body2" sx={{ mt: 2, color: 'gray' }}>
-                Estado del pago
+              <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+                Estado de la membresía
               </Typography>
             </Grid>
           </Grid>
@@ -204,7 +226,7 @@ export default function InicioView() {
                   <Typography variant="h4" fontWeight={900}>
                     {datosMostrar.total_asistencias}
                   </Typography>
-                  <Typography variant="body2" color="gray">
+                  <Typography variant="body2" color="text.secondary">
                     ASISTENCIAS TOTALES
                   </Typography>
                 </Box>
@@ -230,7 +252,7 @@ export default function InicioView() {
                   <Typography variant="h4" fontWeight={900}>
                     {datosMostrar.reservas_activas}
                   </Typography>
-                  <Typography variant="body2" color="gray">
+                  <Typography variant="body2" color="text.secondary">
                     PRÓXIMAS CLASES
                   </Typography>
                 </Box>
@@ -256,7 +278,7 @@ export default function InicioView() {
                   <Typography variant="h5" fontWeight={900}>
                     {datosMostrar.entrenador}
                   </Typography>
-                  <Typography variant="body2" color="gray">
+                  <Typography variant="body2" color="text.secondary">
                     MI ENTRENADOR
                   </Typography>
                 </Box>

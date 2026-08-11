@@ -1,9 +1,15 @@
 node_modules/
-coverage/
-coverage-report/
-.env
+
+# Logs
 *.log
-*.png
-*.svg
-.DS_Store
-Thumbs.db
+
+# Documentos e informes
+*.pdf
+*.docx
+
+# Evidencias de QA
+EvidenciasQA/
+CHECKLIST-PRUEBAS.md
+
+# Scripts de prueba/semilla
+seed-*.js

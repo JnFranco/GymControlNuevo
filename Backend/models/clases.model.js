@@ -41,10 +41,10 @@ async function obtenerClasePorId(id) {
 // =======================================================
 // ✅ CREAR CLASE
 // =======================================================
-async function crearClase({ nombre, descripcion, id_entrenador }) {
+async function crearClase({ nombre, descripcion, id_entrenador, cupos }) {
   const [result] = await db.query(
-    "INSERT INTO clases (nombre, descripcion, id_entrenador) VALUES (?, ?, ?)",
-    [nombre, descripcion, id_entrenador]
+    "INSERT INTO clases (nombre, descripcion, id_entrenador, cupos) VALUES (?, ?, ?, ?)",
+    [nombre, descripcion, id_entrenador, cupos ?? null]
   );
   return result.insertId;
 }
@@ -150,6 +150,17 @@ async function eliminarHorariosPorClase(id_clase) {
   );
 }
 
+// ✅ Crear horario
+async function crearHorario({ id_clase, dia_semana, hora_inicio, hora_fin, capacidad }) {
+  await db.query(
+    `
+    INSERT INTO horarios (id_clase, dia_semana, hora_inicio, hora_fin, capacidad)
+    VALUES (?, ?, ?, ?, ?)
+    `,
+    [id_clase, dia_semana, hora_inicio, hora_fin, capacidad]
+  );
+}
+
 // 🔍 Verificar cruce de horarios para un entrenador (con detalle)
 async function existeCruceHorario({
   id_entrenador,
@@ -195,6 +206,7 @@ module.exports = {
   eliminarClase,
   crearHorario,
   actualizarHorarioPorClase,
+  crearHorario,
   eliminarHorariosPorClase,
   existeCruceHorario
 };

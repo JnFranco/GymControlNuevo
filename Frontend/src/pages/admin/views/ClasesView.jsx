@@ -17,6 +17,7 @@ import {
     Alert
 } from "@mui/material";
 import ClaseForm from "../components/ClaseForm";
+import { PageTitle } from "../../../components/ui/Typography";
 
 export default function ClasesView() {
   // =========================
@@ -131,9 +132,9 @@ export default function ClasesView() {
     // =========================
     return (
         <Box p={3}>
-        <Typography variant="h5" fontWeight={700} mb={2}>
+        <PageTitle sx={{ mb: 2 }}>
             Gestión de Clases
-        </Typography>
+        </PageTitle>
 
         {err && <Alert severity="error" sx={{ mb: 2 }}>{err}</Alert>}
 

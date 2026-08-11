@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from "../../../api/axios";
+import { useNotify } from "../../../components/NotificationProvider";
+import { PageTitle } from "../../../components/ui/Typography";
 import { 
   Box, Typography, Button, TextField, InputAdornment, 
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip,
@@ -8,6 +10,7 @@ import {
 import { Search, Add, Edit, Delete, Person } from "@mui/icons-material";
 // ../ sube a 'admin', ../../ sube a 'pages'
 import RegisterUsuarios from "../../Register";
+import EditarUsuarioModal from "./EditarUsuarioModal";
 
 const glassStyle = {
   background: 'rgba(255, 255, 255, 0.05)',
@@ -19,7 +22,9 @@ const glassStyle = {
 };
 
 export default function UsuariosView() {
+  const notify = useNotify();
   const [showForm, setShowForm] = useState(false);
+  const [editando, setEditando] = useState(null);
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,10 +53,37 @@ export default function UsuariosView() {
     u.correo?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Estado de membresía: Pagado y vigente = Activa; Pagado vencido = Atrasado
+  const estadoMembresia = (u) => {
+    if (!u.membresia_nombre) return null;
+    if (u.pago_estado === "Pagado" && Number(u.dias_restantes) >= 0) return "Activa";
+    return u.pago_estado; // Pendiente / Atrasado
+  };
+
+  const chipMembresia = (estado) => {
+    const map = {
+      "Activa": { bgcolor: 'rgba(0, 200, 0, 0.2)', color: '#43e97b' },
+      "Pendiente": { bgcolor: 'rgba(255, 180, 0, 0.2)', color: '#ffb300' },
+      "Atrasado": { bgcolor: 'rgba(200, 0, 0, 0.2)', color: '#f5576c' },
+    };
+    return map[estado] || { bgcolor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' };
+  };
+
+  const handleEliminar = async (usuario) => {
+    if (!window.confirm(`¿Seguro que deseas eliminar a ${usuario.nombre} ${usuario.apellido}?`)) return;
+    try {
+      await api.delete(`/usuarios/${usuario.id}`);
+      fetchUsuarios();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      notify(error.response?.data?.mensaje || "No se pudo eliminar el usuario", "error");
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4" fontWeight={700}>Gestión de Usuarios</Typography>
+        <PageTitle>Gestión de Usuarios</PageTitle>
         <Button 
           variant="contained" 
           startIcon={<Add />}
@@ -96,6 +128,7 @@ export default function UsuariosView() {
                 <TableCell sx={{ color: '#FFD700', fontWeight: 700 }}>Usuario</TableCell>
                 <TableCell sx={{ color: '#FFD700', fontWeight: 700 }}>Correo</TableCell>
                 <TableCell sx={{ color: '#FFD700', fontWeight: 700 }}>Rol</TableCell>
+                <TableCell sx={{ color: '#FFD700', fontWeight: 700 }}>Membresía</TableCell>
                 <TableCell sx={{ color: '#FFD700', fontWeight: 700 }}>Estado</TableCell>
                 <TableCell sx={{ color: '#FFD700', fontWeight: 700 }} align="right">Acciones</TableCell>
               </TableRow>
@@ -110,6 +143,26 @@ export default function UsuariosView() {
                   <TableCell sx={{ color: 'rgba(255,255,255,0.7)' }}>{row.correo}</TableCell>
                   <TableCell sx={{ color: 'white' }}>{row.rol}</TableCell>
                   <TableCell>
+                    {row.membresia_nombre ? (
+                      <Box>
+                        <Typography variant="body2" fontWeight={700} sx={{ color: 'white' }}>
+                          {row.membresia_nombre}
+                        </Typography>
+                        <Chip
+                          label={estadoMembresia(row)}
+                          size="small"
+                          sx={{
+                            ...chipMembresia(estadoMembresia(row)),
+                            fontWeight: 700, mt: 0.5
+                          }}
+                        />
+                      </Box>
+                    ) : (
+                      <Chip label="Sin membresía" size="small"
+                        sx={{ ...chipMembresia(null), fontWeight: 700 }} />
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <Chip 
                       label={row.activo ? "Activo" : "Inactivo"} 
                       size="small"
@@ -121,14 +174,23 @@ export default function UsuariosView() {
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <Button sx={{ color: '#FFD700' }}><Edit fontSize="small" /></Button>
-                    <Button sx={{ color: '#f5576c' }}><Delete fontSize="small" /></Button>
+                    <Button sx={{ color: '#FFD700' }} onClick={() => setEditando(row)}><Edit fontSize="small" /></Button>
+                    <Button sx={{ color: '#f5576c' }} onClick={() => handleEliminar(row)}><Delete fontSize="small" /></Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {/* MODAL DE EDICIÓN */}
+      {editando && (
+        <EditarUsuarioModal
+          usuario={editando}
+          onClose={() => setEditando(null)}
+          onSaved={fetchUsuarios}
+        />
       )}
 
       {/* FORMULARIO MODAL */}

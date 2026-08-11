@@ -1,107 +1,74 @@
-import { useState } from 'react';
-import { Box } from "@mui/material";
+import { useState } from "react";
+import { Box, Drawer, IconButton, AppBar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Menu as MenuIcon, FitnessCenter } from "@mui/icons-material";
 import SidebarAdmin from "./components/SidebarAdmin";
 import DashboardHome from "./views/DashboardHome";
-import RegisterUsuarios from "../Register"; // Tu componente de usuarios
-import UsuariosView from './views/UsuariosView';
-import EntrenadoresView from './views/EntrenadoresView';
-import ClasesView from './views/ClasesView';
-import ReportesView from './views/ReportesView';
-import ConfiguracionView from './views/ConfiguracionView';
+import UsuariosView from "./views/UsuariosView";
+import EntrenadoresView from "./views/EntrenadoresView";
+import ClasesView from "./views/ClasesView";
+import ReportesView from "./views/ReportesView";
+import ConfiguracionView from "./views/ConfiguracionView";
+import MembresiasView from "./views/MembresiasView";
 
+const SIDEBAR_W = 280;
 
 export default function DashboardAdmin() {
-  // Por defecto, la vista activa es 'dashboard'
-  const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState("dashboard");
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  return (
-    <Box sx={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      bgcolor: '#000', // Fondo negro total como la imagen
-      color: 'white' 
-    }}>
-      {/* 1. MENÚ LATERAL (SIDEBAR) */}
-      <SidebarAdmin activeTab={activeTab} setActiveTab={setActiveTab} />
+    const handleTab = (tab) => {
+        setActiveTab(tab);
+        if (isMobile) setMobileOpen(false);
+    };
 
-      {/* 2. ÁREA DE CONTENIDO DINÁMICO */}
-      <Box sx={{ flexGrow: 1, p: 4, mt: 2 }}>
-    {activeTab === 'dashboard' && <DashboardHome />}
-    {activeTab === 'usuarios' && <UsuariosView />}
-    {activeTab === 'entrenadores' && <EntrenadoresView />}
-    {activeTab === 'clases' && <ClasesView/>}
-    {activeTab === 'reportes' && <ReportesView/>}
-    {activeTab === 'config' && <ConfiguracionView/>}
-    </Box>
+    return (
+        <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#000", color: "white", overflow: "hidden" }}>
+            {isMobile && (
+                <AppBar position="fixed" elevation={0} sx={{ bgcolor: "#0a0a0a", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    <Toolbar variant="dense">
+                        <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ color: "white", mr: 1 }}>
+                            <MenuIcon />
+                        </IconButton>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Box sx={{ bgcolor: "#FFD700", borderRadius: "50%", p: 0.4, display: "flex" }}>
+                                <FitnessCenter sx={{ color: "black", fontSize: 16 }} />
+                            </Box>
+                            <Typography variant="subtitle1" fontWeight={800}>GymControl</Typography>
+                        </Box>
+                    </Toolbar>
+                </AppBar>
+            )}
 
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={() => setMobileOpen(false)}
+                ModalProps={{ keepMounted: true }}
+                PaperProps={{ sx: { width: SIDEBAR_W, bgcolor: "#000", borderRight: "1px solid rgba(255,255,255,0.1)" } }}
+            >
+                <SidebarAdmin activeTab={activeTab} setActiveTab={handleTab} />
+            </Drawer>
 
-    </Box>
-  );
+            <Box sx={{ display: { xs: "none", sm: "flex" }, width: SIDEBAR_W, flexShrink: 0 }}>
+                <SidebarAdmin activeTab={activeTab} setActiveTab={handleTab} />
+            </Box>
+
+            <Box component="main" sx={{
+                flexGrow: 1,
+                minWidth: 0,
+                p: { xs: 2, md: 4 },
+                pt: isMobile ? 8 : 4,
+            }}>
+                {activeTab === "dashboard" && <DashboardHome />}
+                {activeTab === "usuarios" && <UsuariosView />}
+                {activeTab === "entrenadores" && <EntrenadoresView />}
+                {activeTab === "clases" && <ClasesView />}
+                {activeTab === "membresias" && <MembresiasView />}
+                {activeTab === "reportes" && <ReportesView />}
+                {activeTab === "config" && <ConfiguracionView />}
+            </Box>
+        </Box>
+    );
 }
-// import { useState, useEffect } from "react";
-// import { Box, Typography, Grid, Paper } from "@mui/material";
-// import { gymTheme } from "../gymTheme";
-// import { ThemeProvider } from "@mui/material/styles";
-// import Layout from "../layouts/Layout";
-// import PeopleIcon from "@mui/icons-material/People";
-// import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-// import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-// import api from "../api/axios";
-
-// export default function DashboardAdmin() {
-//     const [totales, setTotales] = useState({
-//         clientes: 0,
-//         ingresos: 0,
-//         clasesHoy: 0
-//     });
-
-//     useEffect(() => {
-//         const cargarTotales = async () => {
-//             try {
-//                 const res = await api.get("/admin/resumen");
-//                 setTotales(res.data);
-//             } catch (error) {
-//                 console.error("Error cargando dashboard admin:", error);
-//             }
-//         };
-//         cargarTotales();
-//     }, []);
-
-//     return (
-//         <ThemeProvider theme={gymTheme}>
-//             <Layout rol="Administrador">
-//                 <Box sx={{ p: 4 }}>
-//                     <Typography variant="h4" fontWeight={700} gutterBottom>
-//                         Panel General del Gimnasio
-//                     </Typography>
-
-//                     <Grid container spacing={3}>
-//                         <Grid item xs={12} md={4}>
-//                             <Paper sx={{ p: 3, borderRadius: 4 }}>
-//                                 <PeopleIcon fontSize="large" />
-//                                 <Typography variant="h5" fontWeight={700}>{totales.clientes}</Typography>
-//                                 <Typography>Clientes activos</Typography>
-//                             </Paper>
-//                         </Grid>
-
-//                         <Grid item xs={12} md={4}>
-//                             <Paper sx={{ p: 3, borderRadius: 4 }}>
-//                                 <MonetizationOnIcon fontSize="large" />
-//                                 <Typography variant="h5" fontWeight={700}>S/ {totales.ingresos}</Typography>
-//                                 <Typography>Ingresos del mes</Typography>
-//                             </Paper>
-//                         </Grid>
-
-//                         <Grid item xs={12} md={4}>
-//                             <Paper sx={{ p: 3, borderRadius: 4 }}>
-//                                 <EventAvailableIcon fontSize="large" />
-//                                 <Typography variant="h5" fontWeight={700}>{totales.clasesHoy}</Typography>
-//                                 <Typography>Clases programadas hoy</Typography>
-//                             </Paper>
-//                         </Grid>
-//                     </Grid>
-//                 </Box>
-//             </Layout>
-//         </ThemeProvider>
-//     );
-// }

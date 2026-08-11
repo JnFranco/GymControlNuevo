@@ -1,4 +1,5 @@
 const ClasesModel = require('../models/clases.model');
+const ConfigModel = require('../models/config.model');
 
 // ✅ Obtener todas las clases
 exports.getClases = async (req, res) => {
@@ -64,11 +65,14 @@ exports.createClase = async (req, res) => {
     }
 
     // 1️⃣ Crear la clase
+    const config = await ConfigModel.obtenerConfig();
+    const cuposFinal = Number(cupos) > 0 ? Number(cupos) : (parseInt(config.cuposDefecto) || 10);
+
     const idClase = await ClasesModel.crearClase({
       nombre,
       descripcion,
       id_entrenador,
-      cupos
+      cupos: cuposFinal
     });
 
     // 2️⃣ Crear UN horario POR CADA DÍA
@@ -78,7 +82,7 @@ exports.createClase = async (req, res) => {
         dia_semana: dia,
         hora_inicio,
         hora_fin,
-        capacidad: cupos
+        capacidad: cuposFinal
       });
     }
 
@@ -96,12 +100,6 @@ exports.createClase = async (req, res) => {
 exports.updateClase = async (req, res) => {
   try {
     const idClase = req.params.id;
-
-    // Verificar que la clase existe
-    const claseExistente = await ClasesModel.obtenerClasePorId(idClase);
-    if (!claseExistente) {
-      return res.status(404).json({ mensaje: 'Clase no encontrada' });
-    }
 
     const {
       nombre,

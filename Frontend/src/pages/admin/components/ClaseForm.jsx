@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../../api/axios";
+import { useNotify } from "../../../components/NotificationProvider";
 import {
     Dialog,
     DialogTitle,
@@ -22,6 +23,8 @@ const DIAS_SEMANA = [
 ];
 
 export default function ClaseForm({ open, onClose, clase, recargar }) {
+    const notify = useNotify();
+
     // ===============================
     // ESTADOS
     // ===============================
@@ -110,7 +113,7 @@ export default function ClaseForm({ open, onClose, clase, recargar }) {
     );
 
     if (duplicado) {
-        alert("Esta clase ya existe en ese día y horario");
+        notify("Esta clase ya existe en ese día y horario", "warning");
         return;
     }
 
@@ -129,9 +132,9 @@ export default function ClaseForm({ open, onClose, clase, recargar }) {
 
         // ✅ MOSTRAR MENSAJE REAL DEL BACKEND
         if (error.response && error.response.data?.mensaje) {
-        alert(error.response.data.mensaje);
+        notify(error.response.data.mensaje, "error");
         } else {
-        alert("Ocurrió un error al guardar la clase");
+        notify("Ocurrió un error al guardar la clase", "error");
         }
     }
     };

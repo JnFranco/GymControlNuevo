@@ -30,7 +30,13 @@ export default function Login() {
             // Verificacion de respuesta y rol
             if (res.data && res.data.rol) {
                 localStorage.setItem("usuario", JSON.stringify(res.data));
-                if (res.data.token) localStorage.setItem("token", res.data.token);
+
+                // Si la política obliga a cambiar la contraseña
+                if (res.data.debe_cambiar_password) {
+                    nav("/cambiar-password");
+                    return;
+                }
+
                 const rolRecibido = res.data.rol;
 
                 // Redireccion por rol
@@ -70,7 +76,7 @@ export default function Login() {
                     sx={{
                         p: 5,
                         borderRadius: 5,
-                        width: 420,
+                        width: { xs: '90%', sm: 420 },
                         backdropFilter: "blur(10px)",
                         backgroundColor: "rgba(0,0,0,.6)"
                     }}

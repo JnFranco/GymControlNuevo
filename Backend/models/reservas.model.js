@@ -1,4 +1,5 @@
 const db = require('../db/connection');
+const ConfigModel = require('./config.model');
 
 // ✅ Obtener todas las reservas con datos del usuario, clase y horario
 async function obtenerReservas() {
@@ -116,15 +117,10 @@ async function tieneMembresiaActiva(idUsuario) {
     SELECT p.id FROM pagos p
     JOIN membresias m ON p.id_membresia = m.id
     WHERE p.id_usuario = ?
+      AND p.estado = 'Pagado'
       AND DATE_ADD(p.fecha_pago, INTERVAL m.duracion_dias DAY) >= CURDATE()
     ORDER BY p.fecha_pago DESC LIMIT 1
   `, [idUsuario]);
-  return rows.length > 0;
-}
-
-// ✅ VALIDACIÓN: Verificar que el usuario existe
-async function existeUsuario(idUsuario) {
-  const [rows] = await db.query("SELECT id FROM usuarios WHERE id = ? AND activo = 1", [idUsuario]);
   return rows.length > 0;
 }
 
@@ -134,13 +130,6 @@ async function crearReserva(idUsuario, idHorario) {
   try {
     await connection.beginTransaction();
 
-    // 0. Verificar que el usuario existe
-    const usuarioExiste = await existeUsuario(idUsuario);
-    if (!usuarioExiste) {
-      await connection.rollback();
-      throw new Error('Usuario no encontrado o inactivo');
-    }
-
     // 1. Verificar que el horario existe
     const cuposInfo = await obtenerCuposDisponibles.call(null, idHorario);
     if (!cuposInfo) {
@@ -148,34 +137,62 @@ async function crearReserva(idUsuario, idHorario) {
       throw new Error('Horario no encontrado');
     }
 
-    // 2. Validar cupos disponibles
+    // 2. Validar membresía activa
+    const conMembresia = await tieneMembresiaActiva(idUsuario);
+    if (!conMembresia) {
+      await connection.rollback();
+      throw new Error('No tienes una membresía activa para reservar clases');
+    }
+
+    // 3. Validar cupos disponibles
     if (cuposInfo.disponibles <= 0) {
       await connection.rollback();
       throw new Error('No hay cupos disponibles para esta clase');
     }
 
-    // 3. Validar reserva duplicada
+    // 3.5 Validar configuración del sistema y máximo de reservas
+    const config = await ConfigModel.obtenerConfig();
+    if (!config.sistemaActivo) {
+      await connection.rollback();
+      throw new Error('El sistema está en mantenimiento temporal');
+    }
+    if (!config.reservasActivas) {
+      await connection.rollback();
+      throw new Error('Las reservas están deshabilitadas temporalmente');
+    }
+
+    const maxReservas = parseInt(config.maxReservas) || 3;
+    const [countRows] = await connection.query(
+      `SELECT COUNT(*) AS total FROM reservas WHERE id_usuario = ? AND estado = 'Confirmada'`,
+      [idUsuario]
+    );
+    if (parseInt(countRows[0].total) >= maxReservas) {
+      await connection.rollback();
+      throw new Error(`Has alcanzado el máximo de ${maxReservas} reservas permitidas`);
+    }
+
+    // 4. Validar reserva duplicada
     const yaReservado = await existeReservaActiva(idUsuario, idHorario);
     if (yaReservado) {
       await connection.rollback();
       throw new Error('Ya tienes una reserva activa para este horario');
     }
 
-    // 4. Validar cruce de horarios
+    // 5. Validar cruce de horarios
     const cruce = await tieneCruceReserva(idUsuario, idHorario);
     if (cruce) {
       await connection.rollback();
       throw new Error('Tienes otra reserva en el mismo día y hora');
     }
 
-    // 5. Validar que no sea horario pasado
+    // 6. Validar que no sea horario pasado
     const esPasado = await esHorarioPasado(idHorario);
     if (esPasado) {
       await connection.rollback();
       throw new Error('No se puede reservar un horario que ya pasó');
     }
 
-    // 6. Insertar reserva
+    // 7. Insertar reserva
     const [result] = await connection.query(
       `INSERT INTO reservas (id_usuario, id_horario, estado, fecha_reserva) VALUES (?, ?, 'Confirmada', NOW())`,
       [idUsuario, idHorario]
@@ -207,12 +224,56 @@ async function eliminarReserva(id) {
   return result.affectedRows;
 }
 
-// ✅ Cancelar reserva del usuario (con validacion de horario pasado)
+// ✅ Horas que faltan hasta la próxima ocurrencia de la clase (null si no se puede calcular)
+async function horasHastaClase(idHorario) {
+  const [rows] = await db.query(
+    `SELECT dia_semana, hora_inicio FROM horarios WHERE id = ?`,
+    [idHorario]
+  );
+  if (rows.length === 0) return null;
+
+  const diasMap = {
+    'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4,
+    'Viernes': 5, 'Sábado': 6, 'Domingo': 0
+  };
+  const dia = diasMap[rows[0].dia_semana];
+  if (dia === undefined) return null;
+
+  const [hh, mm] = rows[0].hora_inicio.split(':').map(Number);
+  const ahora = new Date();
+  const hoy = ahora.getDay();
+  const horaActual = ahora.getHours() + ahora.getMinutes() / 60;
+  const horaClase = (hh || 0) + (mm || 0) / 60;
+
+  let diffDias = (dia - hoy + 7) % 7;
+  if (diffDias === 0 && horaActual >= horaClase) diffDias = 7;
+
+  const proxima = new Date(
+    ahora.getFullYear(),
+    ahora.getMonth(),
+    ahora.getDate() + diffDias,
+    hh || 0,
+    mm || 0,
+    0
+  );
+
+  return (proxima - ahora) / (1000 * 60 * 60);
+}
+
+// ✅ Cancelar reserva del usuario (con ventana de cancelación)
 async function cancelarReserva(idUsuario, idHorario) {
-  const esPasado = await esHorarioPasado(idHorario);
-  if (esPasado) {
-    throw new Error('No se puede cancelar una reserva de una clase que ya paso');
+  const config = await ConfigModel.obtenerConfig();
+  const horasMinimas = parseInt(config.cancelarHoras) || 0;
+
+  if (horasMinimas > 0) {
+    const horas = await horasHastaClase(idHorario);
+    if (horas !== null && horas < horasMinimas) {
+      throw new Error(
+        `Solo puedes cancelar con al menos ${horasMinimas} hora(s) de anticipación`
+      );
+    }
   }
+
   const [result] = await db.query(
     `UPDATE reservas SET estado = 'Cancelada' WHERE id_usuario = ? AND id_horario = ? AND estado = 'Confirmada'`,
     [idUsuario, idHorario]
@@ -228,7 +289,6 @@ module.exports = {
   tieneCruceReserva,
   esHorarioPasado,
   tieneMembresiaActiva,
-  existeUsuario,
   crearReserva,
   actualizarReserva,
   eliminarReserva,

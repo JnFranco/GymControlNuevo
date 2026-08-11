@@ -8,6 +8,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 // =======================
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import CambiarPassword from "./pages/CambiarPassword";
 
 // =======================
 // CLIENTE
@@ -38,6 +39,7 @@ export default function App() {
       ======================= */}
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/cambiar-password" element={<CambiarPassword />} />
 
       {/* =======================
           CLIENTE + ADMIN

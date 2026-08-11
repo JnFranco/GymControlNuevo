@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from "../../../api/axios";
+import { useNotify } from "../../../components/NotificationProvider";
+import { PageTitle, CardTitle } from "../../../components/ui/Typography";
 import { 
   Box, Typography, Grid, Card, CardContent, Button, 
   Avatar, ButtonGroup, Stack, CircularProgress
@@ -9,6 +11,7 @@ import {
 } from "@mui/icons-material";
 
 export default function ClasesView() {
+  const notify = useNotify();
   const [vista, setVista] = useState('mis_clases');
   const [clases, setClases] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ export default function ClasesView() {
       cargarDatos(); // Recargar para actualizar botones y cupos
     } catch (error) {
       console.error("Error al reservar:", error);
-      alert("No se pudo completar la reserva.");
+      notify(error.response?.data?.error || "No se pudo completar la reserva.", "error");
     }
   };
 
@@ -60,7 +63,7 @@ export default function ClasesView() {
       cargarDatos();
     } catch (error) {
       console.error("Error al cancelar:", error);
-      alert("Error al cancelar la reserva.");
+      notify(error.response?.data?.error || "Error al cancelar la reserva.", "error");
     }
   };
 
@@ -83,8 +86,8 @@ export default function ClasesView() {
       {/* CABECERA */}
       <Box mb={4} display="flex" justifyContent="space-between" alignItems="center" sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
         <Box>
-          <Typography variant="h4" fontWeight={800} sx={{ color: 'white' }}>Gestión de Clases</Typography>
-          <Typography color="gray">Administra tus horarios y reserva nuevas sesiones.</Typography>
+          <PageTitle sx={{ mb: 0.5 }}>Gestión de Clases</PageTitle>
+          <Typography variant="body2" color="text.secondary">Administra tus horarios y reserva nuevas sesiones.</Typography>
         </Box>
 
         <ButtonGroup sx={{ bgcolor: 'rgba(255,255,255,0.05)', p: 0.5, borderRadius: 3 }}>
@@ -125,19 +128,19 @@ export default function ClasesView() {
                         <Typography variant="h6" fontWeight={800}>{clase.dia_semana}</Typography>
                       </Stack>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <AccessTime sx={{ color: 'gray', fontSize: 18 }} />
-                        <Typography variant="body1" color="gray">{clase.hora_inicio} - {clase.hora_fin}</Typography>
+                        <AccessTime sx={{ color: 'text.secondary', fontSize: 18 }} />
+                        <Typography variant="body2" color="text.secondary">{clase.hora_inicio} - {clase.hora_fin}</Typography>
                       </Stack>
                     </Grid>
 
                     {/* NOMBRE CLASE Y ENTRENADOR */}
                     <Grid item xs={12} sm={5}>
-                      <Typography variant="h5" fontWeight={900}>{clase.clase_nombre}</Typography>
+                      <CardTitle sx={{ fontSize: '1.15rem' }}>{clase.clase_nombre}</CardTitle>
                       <Box display="flex" alignItems="center" gap={1} mt={1}>
                         <Avatar sx={{ width: 24, height: 24, bgcolor: '#fbc02d', color: 'black', fontSize: 12, fontWeight: 700 }}>
                           {clase.entrenador ? clase.entrenador[0] : 'T'}
                         </Avatar>
-                        <Typography variant="body2" color="gray">
+                        <Typography variant="body2" color="text.secondary">
                           Prof. {clase.entrenador} • {clase.cupos_disponibles} cupos
                         </Typography>
                       </Box>

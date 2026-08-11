@@ -38,12 +38,18 @@ export default function GymStatsChart({ data = [] }) {
             dataKey="dia" 
             stroke="#fff" 
             tick={{ fontSize: 12 }} 
+            tickFormatter={(v) => {
+              const d = new Date(v);
+              return isNaN(d) ? v : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+            }}
           />
           <YAxis 
             stroke="#fff" 
             tick={{ fontSize: 12 }} 
+            allowDecimals={false}
           />
           <Tooltip 
+            labelFormatter={(v) => new Date(v).toLocaleDateString()}
             contentStyle={{
               backgroundColor: "#111",
               border: "1px solid #333",

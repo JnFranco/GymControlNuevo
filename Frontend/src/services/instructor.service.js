@@ -1,5 +1,5 @@
 import api from "./api";
 
-export const getMisClases = () => {
-  return api.get("/api/clases/mis-clases");
+export const getMisClases = (idInstructor) => {
+  return api.get(`/clases/instructor/${idInstructor}`);
 };

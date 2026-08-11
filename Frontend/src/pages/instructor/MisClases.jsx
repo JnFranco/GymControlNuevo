@@ -19,6 +19,7 @@ import {
 import FitnessCenterIcon from "@mui/icons-material/FitnessCenter";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import api from "../../services/api";
+import { PageTitle, SectionTitle } from "../../components/ui/Typography";
 
 export default function MisClasesInstructor() {
   const [clases, setClases] = useState([]);
@@ -85,9 +86,7 @@ export default function MisClasesInstructor() {
       <Box sx={{ py: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
           <FitnessCenterIcon sx={{ fontSize: 40, color: "#FFD700" }} />
-          <Typography variant="h4" sx={{ fontWeight: 700, color: "white" }}>
-            Mis Clases
-          </Typography>
+          <PageTitle sx={{ mb: 0 }}>Mis Clases</PageTitle>
         </Box>
         <Box 
           sx={{ 
@@ -110,9 +109,7 @@ export default function MisClasesInstructor() {
       {/* TÍTULO */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
         <FitnessCenterIcon sx={{ fontSize: 40, color: "#f5f11aff" }} />
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "white" }}>
-          Mis Clases
-        </Typography>
+        <PageTitle sx={{ mb: 0 }}>Mis Clases</PageTitle>
       </Box>
 
       <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 4 }}>
